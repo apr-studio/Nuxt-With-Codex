@@ -2,6 +2,18 @@
 const route = useRoute()
 
 const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
+const topNavItems = [
+  { label: 'Routes', icon: 'i-lucide-compass', to: '/' },
+  { label: 'UI Showcase', icon: 'i-lucide-layout-grid', to: '/ui-showcase' },
+  { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard/overview' }
+]
+
+const isTopNavActive = (to: string) => {
+  if (to.startsWith('/dashboard')) {
+    return route.path.startsWith('/dashboard')
+  }
+  return route.path === to
+}
 
 useHead({
   htmlAttrs: { lang: 'en' },
@@ -27,32 +39,34 @@ useSeoMeta({
     </template>
 
     <template v-else>
-      <UHeader>
+      <UHeader class="border-b border-default">
         <template #left>
-          <UButton
-            to="/"
-            variant="ghost"
-            color="neutral"
-            label="Routes"
-            icon="i-lucide-compass"
-          />
-          <UButton
-            to="/ui-showcase"
-            variant="ghost"
-            color="neutral"
-            label="UI Showcase"
-            icon="i-lucide-layout-grid"
-          />
-          <UButton
-            to="/dashboard"
-            variant="ghost"
-            color="neutral"
-            label="Dashboard"
-            icon="i-lucide-layout-dashboard"
-          />
+          <div class="flex items-center gap-1">
+            <UButton
+              v-for="item in topNavItems"
+              :key="item.to"
+              :to="item.to"
+              :icon="item.icon"
+              color="neutral"
+              :variant="isTopNavActive(item.to) ? 'soft' : 'ghost'"
+              :label="item.label"
+              size="sm"
+            />
+          </div>
         </template>
         <template #right>
-          <UColorModeButton />
+          <div class="flex items-center gap-1">
+            <UButton
+              to="https://ui.nuxt.com/components"
+              target="_blank"
+              variant="ghost"
+              color="neutral"
+              icon="i-lucide-book-open"
+              label="Docs"
+              size="sm"
+            />
+            <UColorModeButton />
+          </div>
         </template>
       </UHeader>
 
@@ -68,16 +82,7 @@ useSeoMeta({
             Nuxt UI Demo {{ new Date().getFullYear() }}
           </p>
         </template>
-        <template #right>
-          <UButton
-            to="https://ui.nuxt.com/components"
-            target="_blank"
-            variant="ghost"
-            color="neutral"
-            icon="i-lucide-book-open"
-            label="Nuxt UI Docs"
-          />
-        </template>
+        <template #right />
       </UFooter>
     </template>
   </UApp>

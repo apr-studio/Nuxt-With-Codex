@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
+const sidebarOpen = ref(false)
 
 const navItems = [
   { label: 'Overview', icon: 'i-lucide-home', to: '/dashboard/overview' },
@@ -7,6 +8,8 @@ const navItems = [
   { label: 'Reports', icon: 'i-lucide-bar-chart-3', to: '/dashboard/reports' },
   { label: 'Settings', icon: 'i-lucide-settings', to: '/dashboard/settings' }
 ]
+
+const isActive = (to: string) => route.path === to
 
 const pageTitle = computed(() => {
   if (route.path.startsWith('/dashboard/users')) {
@@ -26,7 +29,7 @@ const pageTitle = computed(() => {
   <div class="min-h-screen bg-default">
     <div class="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
       <div class="grid gap-4 lg:grid-cols-[260px_1fr]">
-        <aside>
+        <aside class="hidden lg:block">
           <UCard>
             <template #header>
               <div class="flex items-center gap-2">
@@ -40,18 +43,26 @@ const pageTitle = computed(() => {
               </div>
             </template>
 
-            <nav class="space-y-2">
-              <UButton
+            <nav class="space-y-1">
+              <NuxtLink
                 v-for="item in navItems"
                 :key="item.to"
                 :to="item.to"
-                :icon="item.icon"
-                color="neutral"
-                :variant="route.path === item.to ? 'solid' : 'ghost'"
-                class="w-full justify-start"
+                class="block"
               >
-                {{ item.label }}
-              </UButton>
+                <div
+                  class="flex items-center gap-2 rounded-md border-l-2 px-2 py-2 transition-colors"
+                  :class="isActive(item.to)
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-transparent hover:bg-elevated/60'"
+                >
+                  <UIcon
+                    :name="item.icon"
+                    class="size-4"
+                  />
+                  <span class="text-sm font-medium">{{ item.label }}</span>
+                </div>
+              </NuxtLink>
             </nav>
 
             <template #footer>
@@ -72,6 +83,13 @@ const pageTitle = computed(() => {
           <UCard>
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="flex items-center gap-2">
+                <UButton
+                  color="neutral"
+                  variant="outline"
+                  icon="i-lucide-menu"
+                  class="lg:hidden"
+                  @click="sidebarOpen = true"
+                />
                 <UIcon
                   name="i-lucide-layout-dashboard"
                   class="size-5 text-muted"
@@ -98,5 +116,30 @@ const pageTitle = computed(() => {
         </section>
       </div>
     </div>
+
+    <UDrawer
+      v-model:open="sidebarOpen"
+      direction="left"
+      :handle="false"
+      title="Dashboard Menu"
+      class="lg:hidden"
+    >
+      <template #body>
+        <div class="space-y-2 p-2">
+          <UButton
+            v-for="item in navItems"
+            :key="`mobile-${item.to}`"
+            :to="item.to"
+            :icon="item.icon"
+            color="neutral"
+            :variant="isActive(item.to) ? 'solid' : 'ghost'"
+            class="w-full justify-start"
+            @click="sidebarOpen = false"
+          >
+            {{ item.label }}
+          </UButton>
+        </div>
+      </template>
+    </UDrawer>
   </div>
 </template>
