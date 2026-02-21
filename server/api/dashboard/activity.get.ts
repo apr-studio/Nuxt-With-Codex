@@ -1,4 +1,8 @@
-export default defineEventHandler(() => {
+import { assertPermission } from '../../utils/rbac'
+
+export default defineEventHandler((event) => {
+  assertPermission(event, 'dashboard:view')
+
   return {
     activityItems: [
       { label: 'New plan upgrade by Acme Inc.', content: '2 minutes ago' },

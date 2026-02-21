@@ -1,20 +1,36 @@
 <script setup lang="ts">
 const route = useRoute()
 const sidebarOpen = ref(false)
-const role = useCookie<'admin' | 'member'>('role', { default: () => 'admin' })
+const role = useCookie<'admin' | 'editor' | 'viewer'>('role', { default: () => 'admin' })
 
 const navItems = [
-  { label: 'Overview', icon: 'i-lucide-home', to: '/dashboard/overview' },
-  { label: 'Users', icon: 'i-lucide-users', to: '/dashboard/users' },
-  { label: 'Reports', icon: 'i-lucide-bar-chart-3', to: '/dashboard/reports' },
-  { label: 'Settings', icon: 'i-lucide-settings', to: '/dashboard/settings' }
+  { label: 'Overview', icon: 'i-lucide-home', to: '/dashboard/overview', permission: 'dashboard:view' },
+  { label: 'Users', icon: 'i-lucide-users', to: '/dashboard/users', permission: 'users:view' },
+  { label: 'Reports', icon: 'i-lucide-bar-chart-3', to: '/dashboard/reports', permission: 'reports:view' },
+  { label: 'Settings', icon: 'i-lucide-settings', to: '/dashboard/settings', permission: 'settings:view' }
 ]
 
 const isActive = (to: string) => route.path === to
+const rolePermissions: Record<'admin' | 'editor' | 'viewer', string[]> = {
+  admin: ['dashboard:view', 'reports:view', 'users:view', 'users:create', 'users:update', 'users:delete', 'settings:view', 'settings:write'],
+  editor: ['dashboard:view', 'reports:view', 'users:view', 'users:update', 'settings:view'],
+  viewer: ['dashboard:view', 'reports:view', 'users:view']
+}
+
+const normalizedRole = computed(() => {
+  if (role.value === 'admin' || role.value === 'editor' || role.value === 'viewer') {
+    return role.value
+  }
+  return 'viewer'
+})
+
+const visibleNavItems = computed(() =>
+  navItems.filter(item => rolePermissions[normalizedRole.value].includes(item.permission))
+)
 
 watch(role, (value) => {
-  if (value !== 'admin' && value !== 'member') {
-    role.value = 'member'
+  if (value !== 'admin' && value !== 'editor' && value !== 'viewer') {
+    role.value = 'viewer'
   }
 })
 
@@ -52,7 +68,7 @@ const pageTitle = computed(() => {
 
             <nav class="space-y-1">
               <NuxtLink
-                v-for="item in navItems"
+                v-for="item in visibleNavItems"
                 :key="item.to"
                 :to="item.to"
                 class="block"
@@ -108,14 +124,14 @@ const pageTitle = computed(() => {
               <div class="flex items-center gap-2">
                 <USelect
                   v-model="role"
-                  :items="['admin', 'member']"
+                  :items="['admin', 'editor', 'viewer']"
                   class="w-28"
                 />
                 <UBadge
                   color="neutral"
                   variant="subtle"
                 >
-                  Role: {{ role }}
+                  Role: {{ normalizedRole }}
                 </UBadge>
                 <UButton
                   to="/"
@@ -146,10 +162,10 @@ const pageTitle = computed(() => {
         <div class="space-y-2 p-2">
           <USelect
             v-model="role"
-            :items="['admin', 'member']"
+            :items="['admin', 'editor', 'viewer']"
           />
           <UButton
-            v-for="item in navItems"
+            v-for="item in visibleNavItems"
             :key="`mobile-${item.to}`"
             :to="item.to"
             :icon="item.icon"

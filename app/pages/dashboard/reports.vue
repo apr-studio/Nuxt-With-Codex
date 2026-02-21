@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: ['dashboard-role']
+  middleware: ['dashboard-role'],
+  permission: 'reports:view'
 })
 
 const reportRange = ref('Last 30 days')

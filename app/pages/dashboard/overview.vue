@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: ['dashboard-role']
+  middleware: ['dashboard-role'],
+  permission: 'dashboard:view'
 })
 
 type KpiItem = {

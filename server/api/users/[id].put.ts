@@ -1,16 +1,16 @@
 import { readBody, getRouterParam, createError } from 'h3'
-import { assertAdmin } from '../../utils/auth'
-import { updateUser, type Role, type UserStatus } from '../../utils/mock-db'
+import { assertPermission, getRole } from '../../utils/rbac'
+import { prisma } from '../../utils/prisma'
 
 type UpdatePayload = {
   name?: string
   email?: string
-  role?: Role
-  status?: UserStatus
+  role?: 'admin' | 'editor' | 'viewer'
+  status?: 'active' | 'invited' | 'disabled'
 }
 
 export default defineEventHandler(async (event) => {
-  assertAdmin(event)
+  assertPermission(event, 'users:update')
   const id = Number(getRouterParam(event, 'id'))
   if (!Number.isFinite(id)) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid user id.' })
@@ -24,23 +24,38 @@ export default defineEventHandler(async (event) => {
   if (body.email !== undefined && !/^\S+@\S+\.\S+$/.test(body.email)) {
     throw createError({ statusCode: 400, statusMessage: 'Email format is invalid.' })
   }
-  if (body.role !== undefined && !['owner', 'admin', 'member'].includes(body.role)) {
+  if (body.role !== undefined && !['admin', 'editor', 'viewer'].includes(body.role)) {
     throw createError({ statusCode: 400, statusMessage: 'Role is invalid.' })
   }
   if (body.status !== undefined && !['active', 'invited', 'disabled'].includes(body.status)) {
     throw createError({ statusCode: 400, statusMessage: 'Status is invalid.' })
   }
 
-  const updated = updateUser(id, {
-    ...(body.name !== undefined ? { name: body.name.trim() } : {}),
-    ...(body.email !== undefined ? { email: body.email.trim().toLowerCase() } : {}),
-    ...(body.role !== undefined ? { role: body.role } : {}),
-    ...(body.status !== undefined ? { status: body.status } : {})
-  })
+  const actorRole = getRole(event)
+  if (actorRole !== 'admin' && body.role !== undefined) {
+    throw createError({ statusCode: 403, statusMessage: 'Only admin can change user role.' })
+  }
 
-  if (!updated) {
+  const existing = await prisma.user.findUnique({ where: { id } })
+  if (!existing) {
     throw createError({ statusCode: 404, statusMessage: 'User not found.' })
   }
 
-  return { user: updated }
+  const updated = await prisma.user.update({
+    where: { id },
+    data: {
+      ...(body.name !== undefined ? { name: body.name.trim() } : {}),
+      ...(body.email !== undefined ? { email: body.email.trim().toLowerCase() } : {}),
+      ...(body.role !== undefined ? { role: body.role.toUpperCase() as 'ADMIN' | 'EDITOR' | 'VIEWER' } : {}),
+      ...(body.status !== undefined ? { status: body.status.toUpperCase() as 'ACTIVE' | 'INVITED' | 'DISABLED' } : {})
+    }
+  })
+
+  return {
+    user: {
+      ...updated,
+      role: updated.role.toLowerCase(),
+      status: updated.status.toLowerCase()
+    }
+  }
 })

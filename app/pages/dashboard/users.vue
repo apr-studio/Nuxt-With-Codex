@@ -1,6 +1,6 @@
 <script setup lang="ts">
 type UserStatus = 'active' | 'invited' | 'disabled'
-type UserRole = 'owner' | 'admin' | 'member'
+type UserRole = 'admin' | 'editor' | 'viewer'
 
 type UserRow = {
   id: number
@@ -24,13 +24,29 @@ type FormError = {
 }
 
 definePageMeta({
-  middleware: ['dashboard-role']
+  middleware: ['dashboard-role'],
+  permission: 'users:view'
 })
 
-const role = useCookie<'admin' | 'member'>('role', { default: () => 'admin' })
-const isAdmin = computed(() => role.value === 'admin')
-const usersApi = useApiPath('/api/users')
+const role = useCookie<'admin' | 'editor' | 'viewer'>('role', { default: () => 'admin' })
+const normalizedRole = computed(() => {
+  if (role.value === 'admin' || role.value === 'editor' || role.value === 'viewer') {
+    return role.value
+  }
+  return 'viewer'
+})
 
+const rolePermissions: Record<'admin' | 'editor' | 'viewer', string[]> = {
+  admin: ['users:view', 'users:create', 'users:update', 'users:delete'],
+  editor: ['users:view', 'users:update'],
+  viewer: ['users:view']
+}
+
+const canCreate = computed(() => rolePermissions[normalizedRole.value].includes('users:create'))
+const canUpdate = computed(() => rolePermissions[normalizedRole.value].includes('users:update'))
+const canDelete = computed(() => rolePermissions[normalizedRole.value].includes('users:delete'))
+
+const usersApi = useApiPath('/api/users')
 const query = ref('')
 const statusFilter = ref<'all' | UserStatus>('all')
 const page = ref(1)
@@ -58,7 +74,7 @@ const actionError = ref('')
 const formState = reactive({
   name: '',
   email: '',
-  role: 'member' as UserRole,
+  role: 'viewer' as UserRole,
   status: 'active' as UserStatus
 })
 
@@ -68,17 +84,23 @@ function resetForm() {
   editingUserId.value = null
   formState.name = ''
   formState.email = ''
-  formState.role = 'member'
+  formState.role = 'viewer'
   formState.status = 'active'
   actionError.value = ''
 }
 
 function openCreateModal() {
+  if (!canCreate.value) {
+    return
+  }
   resetForm()
   modalOpen.value = true
 }
 
 function openEditModal(user: UserRow) {
+  if (!canUpdate.value) {
+    return
+  }
   editingUserId.value = user.id
   formState.name = user.name
   formState.email = user.email
@@ -97,7 +119,7 @@ function validateForm(state: typeof formState): FormError[] {
   if (!state.email || !/^\S+@\S+\.\S+$/.test(state.email)) {
     errors.push({ name: 'email', message: 'Email format is invalid.' })
   }
-  if (!['owner', 'admin', 'member'].includes(state.role)) {
+  if (!['admin', 'editor', 'viewer'].includes(state.role)) {
     errors.push({ name: 'role', message: 'Role is invalid.' })
   }
   if (!['active', 'invited', 'disabled'].includes(state.status)) {
@@ -111,12 +133,18 @@ async function submitForm() {
   actionError.value = ''
   try {
     if (editingUserId.value) {
+      if (!canUpdate.value) {
+        throw new Error('Permission denied for update.')
+      }
       await $fetch(useApiPath(`/api/users/${editingUserId.value}`), {
         baseURL: useRuntimeConfig().app.baseURL,
         method: 'PUT',
         body: formState
       })
     } else {
+      if (!canCreate.value) {
+        throw new Error('Permission denied for create.')
+      }
       await $fetch(usersApi, {
         baseURL: useRuntimeConfig().app.baseURL,
         method: 'POST',
@@ -135,6 +163,9 @@ async function submitForm() {
 async function removeUser(id: number) {
   actionError.value = ''
   try {
+    if (!canDelete.value) {
+      throw new Error('Permission denied for delete.')
+    }
     await $fetch(useApiPath(`/api/users/${id}`), {
       baseURL: useRuntimeConfig().app.baseURL,
       method: 'DELETE'
@@ -157,7 +188,7 @@ async function removeUser(id: number) {
             </h2>
             <UButton
               icon="i-lucide-plus"
-              :disabled="!isAdmin"
+              :disabled="!canCreate"
               @click="openCreateModal"
             >
               New User
@@ -181,7 +212,7 @@ async function removeUser(id: number) {
             color="neutral"
             variant="subtle"
           >
-            Role: {{ role }}
+            Role: {{ normalizedRole }}
           </UBadge>
         </div>
 
@@ -219,7 +250,7 @@ async function removeUser(id: number) {
                   color="neutral"
                   variant="ghost"
                   icon="i-lucide-pencil"
-                  :disabled="!isAdmin"
+                  :disabled="!canUpdate"
                   @click="openEditModal(user)"
                 >
                   Edit
@@ -228,7 +259,7 @@ async function removeUser(id: number) {
                   color="error"
                   variant="ghost"
                   icon="i-lucide-trash-2"
-                  :disabled="!isAdmin"
+                  :disabled="!canDelete"
                   @click="removeUser(user.id)"
                 >
                   Delete
@@ -253,11 +284,11 @@ async function removeUser(id: number) {
       </UCard>
 
       <UAlert
-        v-if="!isAdmin"
+        v-if="!(canCreate || canUpdate || canDelete)"
         color="warning"
         variant="subtle"
         title="Read-only mode"
-        description="Switch role to admin in dashboard header to enable CRUD actions."
+        description="Current role only has view permission."
       />
 
       <UAlert
@@ -279,7 +310,7 @@ async function removeUser(id: number) {
     <UModal
       v-model:open="modalOpen"
       :title="modalTitle"
-      :description="isAdmin ? 'Submit to save this user record.' : 'Only admin can save changes.'"
+      :description="canCreate || canUpdate ? 'Submit to save this user record.' : 'You do not have permission to save changes.'"
     >
       <template #body>
         <UForm
@@ -311,7 +342,7 @@ async function removeUser(id: number) {
           >
             <USelect
               v-model="formState.role"
-              :items="['owner', 'admin', 'member']"
+              :items="['admin', 'editor', 'viewer']"
             />
           </UFormField>
 
@@ -328,7 +359,7 @@ async function removeUser(id: number) {
           <div class="flex items-center gap-2 pt-2">
             <UButton
               type="submit"
-              :disabled="!isAdmin"
+              :disabled="editingUserId ? !canUpdate : !canCreate"
               icon="i-lucide-save"
             >
               Save

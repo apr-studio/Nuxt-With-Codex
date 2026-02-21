@@ -1,12 +1,12 @@
 import { readBody, createError } from 'h3'
-import { assertAdmin } from '../utils/auth'
-import { createUser, type Role, type UserStatus } from '../utils/mock-db'
+import { assertPermission } from '../utils/rbac'
+import { prisma } from '../utils/prisma'
 
 type CreatePayload = {
   name?: string
   email?: string
-  role?: Role
-  status?: UserStatus
+  role?: 'admin' | 'editor' | 'viewer'
+  status?: 'active' | 'invited' | 'disabled'
 }
 
 function validatePayload(body: CreatePayload) {
@@ -16,7 +16,7 @@ function validatePayload(body: CreatePayload) {
   if (!body.email || !/^\S+@\S+\.\S+$/.test(body.email)) {
     throw createError({ statusCode: 400, statusMessage: 'Email format is invalid.' })
   }
-  if (!body.role || !['owner', 'admin', 'member'].includes(body.role)) {
+  if (!body.role || !['admin', 'editor', 'viewer'].includes(body.role)) {
     throw createError({ statusCode: 400, statusMessage: 'Role is invalid.' })
   }
   if (!body.status || !['active', 'invited', 'disabled'].includes(body.status)) {
@@ -25,16 +25,24 @@ function validatePayload(body: CreatePayload) {
 }
 
 export default defineEventHandler(async (event) => {
-  assertAdmin(event)
+  assertPermission(event, 'users:create')
   const body = await readBody<CreatePayload>(event)
   validatePayload(body)
 
-  const user = createUser({
-    name: body.name!.trim(),
-    email: body.email!.trim().toLowerCase(),
-    role: body.role!,
-    status: body.status!
+  const user = await prisma.user.create({
+    data: {
+      name: body.name!.trim(),
+      email: body.email!.trim().toLowerCase(),
+      role: body.role!.toUpperCase() as 'ADMIN' | 'EDITOR' | 'VIEWER',
+      status: body.status!.toUpperCase() as 'ACTIVE' | 'INVITED' | 'DISABLED'
+    }
   })
 
-  return { user }
+  return {
+    user: {
+      ...user,
+      role: user.role.toLowerCase(),
+      status: user.status.toLowerCase()
+    }
+  }
 })

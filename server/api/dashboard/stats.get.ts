@@ -1,10 +1,14 @@
-import { listUsers } from '../../utils/mock-db'
+import { assertPermission } from '../../utils/rbac'
+import { prisma } from '../../utils/prisma'
 
-export default defineEventHandler(() => {
-  const users = listUsers()
-  const activeUsers = users.filter(user => user.status === 'active').length
-  const invitedUsers = users.filter(user => user.status === 'invited').length
-  const disabledUsers = users.filter(user => user.status === 'disabled').length
+export default defineEventHandler(async (event) => {
+  assertPermission(event, 'dashboard:view')
+
+  const [activeUsers, invitedUsers, disabledUsers] = await Promise.all([
+    prisma.user.count({ where: { status: 'ACTIVE' } }),
+    prisma.user.count({ where: { status: 'INVITED' } }),
+    prisma.user.count({ where: { status: 'DISABLED' } })
+  ])
 
   return [
     { title: 'Monthly Revenue', value: '$128,450', trend: '+8.4%', icon: 'i-lucide-wallet' },

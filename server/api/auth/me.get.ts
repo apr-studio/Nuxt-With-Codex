@@ -1,7 +1,9 @@
-import { getRole } from '../../utils/auth'
+import { getPermissions, getRole } from '../../utils/rbac'
 
 export default defineEventHandler((event) => {
+  const role = getRole(event)
   return {
-    role: getRole(event)
+    role,
+    permissions: getPermissions(role)
   }
 })

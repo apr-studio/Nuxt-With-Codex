@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   middleware: ['dashboard-role'],
-  requiresAdmin: true
+  permission: 'settings:view'
 })
 
 const state = reactive({
@@ -12,6 +12,9 @@ const state = reactive({
   channels: ['Email'],
   incidentMode: true
 })
+
+const role = useCookie<'admin' | 'editor' | 'viewer'>('role', { default: () => 'admin' })
+const canWriteSettings = computed(() => role.value === 'admin')
 
 const timezoneOptions = ['Asia/Taipei', 'UTC', 'America/Los_Angeles', 'Europe/Berlin']
 const digestOptions = ['Daily', 'Weekly', 'Monthly']
@@ -72,7 +75,10 @@ const channelOptions = ['Email', 'SMS', 'Push']
         <USeparator />
 
         <div class="flex gap-2">
-          <UButton icon="i-lucide-save">
+          <UButton
+            icon="i-lucide-save"
+            :disabled="!canWriteSettings"
+          >
             Save Settings
           </UButton>
           <UButton
@@ -85,5 +91,13 @@ const channelOptions = ['Email', 'SMS', 'Push']
         </div>
       </UForm>
     </UCard>
+
+    <UAlert
+      v-if="!canWriteSettings"
+      color="warning"
+      variant="subtle"
+      title="Read-only settings"
+      description="Only admin role can save settings."
+    />
   </DashboardStableShell>
 </template>
