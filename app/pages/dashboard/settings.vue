@@ -1,4 +1,9 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: ['dashboard-role'],
+  requiresAdmin: true
+})
+
 const state = reactive({
   workspaceName: 'Nuxt Admin Workspace',
   timezone: 'Asia/Taipei',

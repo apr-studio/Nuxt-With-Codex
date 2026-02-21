@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: ['dashboard-role']
+})
+
 const reportRange = ref('Last 30 days')
 
 const summaryCards = [

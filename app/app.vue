@@ -5,7 +5,11 @@ const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 const topNavItems = [
   { label: 'Routes', icon: 'i-lucide-compass', to: '/' },
   { label: 'UI Showcase', icon: 'i-lucide-layout-grid', to: '/ui-showcase' },
-  { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard/overview' }
+  {
+    label: 'Dashboard',
+    icon: 'i-lucide-layout-dashboard',
+    to: '/dashboard/overview'
+  }
 ]
 
 const isTopNavActive = (to: string) => {
@@ -39,6 +43,7 @@ useSeoMeta({
     </template>
 
     <template v-else>
+      <!-- Header -->
       <UHeader class="border-b border-default">
         <template #left>
           <div class="flex items-center gap-1">
@@ -69,7 +74,7 @@ useSeoMeta({
           </div>
         </template>
       </UHeader>
-
+      <!-- Content -->
       <UMain>
         <NuxtPage />
       </UMain>

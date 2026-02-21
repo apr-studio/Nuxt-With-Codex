@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const sidebarOpen = ref(false)
+const role = useCookie<'admin' | 'member'>('role', { default: () => 'admin' })
 
 const navItems = [
   { label: 'Overview', icon: 'i-lucide-home', to: '/dashboard/overview' },
@@ -10,6 +11,12 @@ const navItems = [
 ]
 
 const isActive = (to: string) => route.path === to
+
+watch(role, (value) => {
+  if (value !== 'admin' && value !== 'member') {
+    role.value = 'member'
+  }
+})
 
 const pageTitle = computed(() => {
   if (route.path.startsWith('/dashboard/users')) {
@@ -99,6 +106,17 @@ const pageTitle = computed(() => {
                 </h1>
               </div>
               <div class="flex items-center gap-2">
+                <USelect
+                  v-model="role"
+                  :items="['admin', 'member']"
+                  class="w-28"
+                />
+                <UBadge
+                  color="neutral"
+                  variant="subtle"
+                >
+                  Role: {{ role }}
+                </UBadge>
                 <UButton
                   to="/"
                   color="neutral"
@@ -126,6 +144,10 @@ const pageTitle = computed(() => {
     >
       <template #body>
         <div class="space-y-2 p-2">
+          <USelect
+            v-model="role"
+            :items="['admin', 'member']"
+          />
           <UButton
             v-for="item in navItems"
             :key="`mobile-${item.to}`"
