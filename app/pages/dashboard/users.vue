@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useDashboardRole } from '~/composables/useDashboardRole'
+
 type UserStatus = 'active' | 'invited' | 'disabled'
 type UserRole = 'admin' | 'editor' | 'viewer'
 
@@ -28,23 +30,10 @@ definePageMeta({
   permission: 'users:view'
 })
 
-const role = useCookie<'admin' | 'editor' | 'viewer'>('role', { default: () => 'admin' })
-const normalizedRole = computed(() => {
-  if (role.value === 'admin' || role.value === 'editor' || role.value === 'viewer') {
-    return role.value
-  }
-  return 'viewer'
-})
-
-const rolePermissions: Record<'admin' | 'editor' | 'viewer', string[]> = {
-  admin: ['users:view', 'users:create', 'users:update', 'users:delete'],
-  editor: ['users:view', 'users:update'],
-  viewer: ['users:view']
-}
-
-const canCreate = computed(() => rolePermissions[normalizedRole.value].includes('users:create'))
-const canUpdate = computed(() => rolePermissions[normalizedRole.value].includes('users:update'))
-const canDelete = computed(() => rolePermissions[normalizedRole.value].includes('users:delete'))
+const { normalizedRole, can } = useDashboardRole()
+const canCreate = computed(() => can('users:create'))
+const canUpdate = computed(() => can('users:update'))
+const canDelete = computed(() => can('users:delete'))
 
 const usersApi = useApiPath('/api/users')
 const query = ref('')

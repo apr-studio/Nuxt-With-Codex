@@ -1,51 +1,18 @@
 <script setup lang="ts">
+import { DASHBOARD_NAV_ITEMS, getDashboardPageTitle } from '#shared/dashboard-shell'
+import { useDashboardRole } from '~/composables/useDashboardRole'
+
 const route = useRoute()
 const sidebarOpen = ref(false)
-const role = useCookie<'admin' | 'editor' | 'viewer'>('role', { default: () => 'admin' })
-
-const navItems = [
-  { label: 'Overview', icon: 'i-lucide-home', to: '/dashboard/overview', permission: 'dashboard:view' },
-  { label: 'Users', icon: 'i-lucide-users', to: '/dashboard/users', permission: 'users:view' },
-  { label: 'Reports', icon: 'i-lucide-bar-chart-3', to: '/dashboard/reports', permission: 'reports:view' },
-  { label: 'Settings', icon: 'i-lucide-settings', to: '/dashboard/settings', permission: 'settings:view' }
-]
+const { role, normalizedRole, can } = useDashboardRole()
 
 const isActive = (to: string) => route.path === to
-const rolePermissions: Record<'admin' | 'editor' | 'viewer', string[]> = {
-  admin: ['dashboard:view', 'reports:view', 'users:view', 'users:create', 'users:update', 'users:delete', 'settings:view', 'settings:write'],
-  editor: ['dashboard:view', 'reports:view', 'users:view', 'users:update', 'settings:view'],
-  viewer: ['dashboard:view', 'reports:view', 'users:view']
-}
-
-const normalizedRole = computed(() => {
-  if (role.value === 'admin' || role.value === 'editor' || role.value === 'viewer') {
-    return role.value
-  }
-  return 'viewer'
-})
 
 const visibleNavItems = computed(() =>
-  navItems.filter(item => rolePermissions[normalizedRole.value].includes(item.permission))
+  DASHBOARD_NAV_ITEMS.filter(item => can(item.permission))
 )
 
-watch(role, (value) => {
-  if (value !== 'admin' && value !== 'editor' && value !== 'viewer') {
-    role.value = 'viewer'
-  }
-})
-
-const pageTitle = computed(() => {
-  if (route.path.startsWith('/dashboard/users')) {
-    return 'Users'
-  }
-  if (route.path.startsWith('/dashboard/reports')) {
-    return 'Reports'
-  }
-  if (route.path.startsWith('/dashboard/settings')) {
-    return 'Settings'
-  }
-  return 'Overview'
-})
+const pageTitle = computed(() => getDashboardPageTitle(route.path))
 </script>
 
 <template>

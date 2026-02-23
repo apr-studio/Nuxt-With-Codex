@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useDashboardRole } from '~/composables/useDashboardRole'
+
 definePageMeta({
   middleware: ['dashboard-role'],
   permission: 'settings:view'
@@ -13,8 +15,8 @@ const state = reactive({
   incidentMode: true
 })
 
-const role = useCookie<'admin' | 'editor' | 'viewer'>('role', { default: () => 'admin' })
-const canWriteSettings = computed(() => role.value === 'admin')
+const { can } = useDashboardRole()
+const canWriteSettings = computed(() => can('settings:write'))
 
 const timezoneOptions = ['Asia/Taipei', 'UTC', 'America/Los_Angeles', 'Europe/Berlin']
 const digestOptions = ['Daily', 'Weekly', 'Monthly']
