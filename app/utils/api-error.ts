@@ -1,3 +1,4 @@
+import { API_ERROR_CODES } from '#shared/api-error-codes'
 import type { ApiFailure } from '#shared/api-response'
 
 type ApiFailureLike = {
@@ -30,7 +31,7 @@ export function extractApiError(error: unknown): ApiFailure['error'] | null {
 
   if (error instanceof Error && error.message) {
     return {
-      code: 'REQUEST_FAILED',
+      code: API_ERROR_CODES.requestFailed,
       message: error.message
     }
   }
