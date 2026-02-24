@@ -1,9 +1,17 @@
-import { createError, getCookie, type H3Event } from 'h3'
+import { createError, type H3Event } from 'h3'
 import { hasPermission as hasPermissionByRole, normalizeRole, ROLE_PERMISSIONS } from '#shared/rbac'
 import type { AppRole, Permission } from '#shared/rbac'
+import { getAuthSession } from './session'
 
 export function getRole(event: H3Event): AppRole {
-  return normalizeRole(getCookie(event, 'role'))
+  const session = getAuthSession(event)
+  if (!session) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Authentication required.'
+    })
+  }
+  return normalizeRole(session.role)
 }
 
 export function getPermissions(role: AppRole): Permission[] {

@@ -1,7 +1,7 @@
 import { hasPermission } from '#shared/rbac'
 import type { AppRole, Permission } from '#shared/rbac'
 
-export const DASHBOARD_FORBIDDEN_REDIRECT = '/dashboard/overview?forbidden=1'
+export const DASHBOARD_FORBIDDEN_REDIRECT = '/unauthorized'
 
 type DashboardPageMeta = {
   permission?: Permission

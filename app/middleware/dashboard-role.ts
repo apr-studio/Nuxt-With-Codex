@@ -1,15 +1,24 @@
-import { normalizeRole } from '#shared/rbac'
-import type { AppRole } from '#shared/rbac'
 import type { PageMeta } from '#app'
 import { getDashboardGuardRedirect } from '~/utils/dashboard-guard'
+import type { ApiResponse } from '#shared/api-response'
+import type { AuthMeResponse } from '#shared/schemas/auth'
 
-export default defineNuxtRouteMiddleware((to) => {
-  const role = useCookie<AppRole>('role', { default: () => 'admin' })
-  const normalizedRole = normalizeRole(role.value)
-  role.value = normalizedRole
+export default defineNuxtRouteMiddleware(async (to) => {
+  const fetcher = useRequestFetch()
+  let response: ApiResponse<AuthMeResponse>
+
+  try {
+    response = await fetcher<ApiResponse<AuthMeResponse>>(useApiPath('/api/auth/me'))
+  } catch {
+    return navigateTo('/login')
+  }
+
+  if (!response.success) {
+    return navigateTo('/login')
+  }
 
   const redirect = getDashboardGuardRedirect(
-    normalizedRole,
+    response.data.role,
     to.path,
     to.meta as PageMeta
   )

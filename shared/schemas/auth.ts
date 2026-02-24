@@ -17,4 +17,10 @@ export const authMeResponseSchema = z.object({
   permissions: z.array(permissionSchema)
 })
 
+export const authLoginBodySchema = z.object({
+  role: appRoleSchema,
+  email: z.string().trim().email().optional()
+})
+
 export type AuthMeResponse = z.infer<typeof authMeResponseSchema>
+export type AuthLoginBody = z.infer<typeof authLoginBodySchema>
