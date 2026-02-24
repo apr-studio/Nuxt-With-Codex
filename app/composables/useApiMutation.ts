@@ -1,18 +1,13 @@
 import { computed, ref, toValue } from 'vue'
 import { extractApiError } from '~/utils/api-error'
+import { getRetryDelay, shouldRetry, type RetryOptions } from '~/utils/api-retry'
+import { emitErrorToast, emitSuccessToast } from '~/utils/api-toast'
 import type { ApiResponse } from '#shared/api-response'
 
 // Generic mutation helper with retry + toast support.
 type Method = 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 type MaybeRefGetter<T> = T | Ref<T> | (() => T)
 type MutationBody = Record<string, unknown> | BodyInit | null
-type RetryOptions = {
-  count?: number
-  delayMs?: number
-  backoff?: 'fixed' | 'exponential'
-  maxDelayMs?: number
-  retryOnCodes?: string[]
-}
 
 type MutationDefaults = {
   url?: MaybeRefGetter<string>
@@ -38,26 +33,6 @@ export function useApiMutation<TPayload, TBody extends MutationBody = Record<str
   const toast = useToast()
 
   // Compute retry delay based on backoff strategy.
-  function getRetryDelay(attempt: number, options: RetryOptions) {
-    const baseDelay = options.delayMs ?? 400
-    if (options.backoff === 'exponential') {
-      const maxDelay = options.maxDelayMs ?? 4000
-      return Math.min(maxDelay, baseDelay * 2 ** attempt)
-    }
-    return baseDelay
-  }
-
-  // Check whether a given API error code should be retried.
-  function shouldRetry(errorCode: string | undefined, options: RetryOptions) {
-    if (!errorCode) {
-      return true
-    }
-    if (!options.retryOnCodes || options.retryOnCodes.length === 0) {
-      return true
-    }
-    return options.retryOnCodes.includes(errorCode)
-  }
-
   // Execute the request with optional retry on recoverable errors.
   async function mutate(input: MutationInput<TBody> = {}) {
     const resolvedUrl = input.url || (defaults.url ? toValue(defaults.url) : '')
@@ -94,20 +69,17 @@ export function useApiMutation<TPayload, TBody extends MutationBody = Record<str
               continue
             }
             if (defaults.toastOptions?.error !== false && import.meta.client) {
-              toast.add({
-                title: defaults.toastOptions?.error || 'Request failed',
-                description: apiError.value.message,
-                color: 'error'
-              })
+              emitErrorToast(
+                toast,
+                defaults.toastOptions?.error || 'Request failed',
+                apiError.value.message
+              )
             }
             return undefined
           }
 
-          if (defaults.toastOptions?.success && import.meta.client) {
-            toast.add({
-              title: defaults.toastOptions.success,
-              color: 'success'
-            })
+          if (defaults.toastOptions?.success) {
+            emitSuccessToast(toast, defaults.toastOptions.success)
           }
           return response.data
         } catch (error) {
@@ -118,12 +90,12 @@ export function useApiMutation<TPayload, TBody extends MutationBody = Record<str
             await new Promise(resolve => setTimeout(resolve, delay))
             continue
           }
-          if (defaults.toastOptions?.error !== false && import.meta.client) {
-            toast.add({
-              title: defaults.toastOptions?.error || 'Request failed',
-              description: apiError.value.message,
-              color: 'error'
-            })
+          if (defaults.toastOptions?.error !== false) {
+            emitErrorToast(
+              toast,
+              defaults.toastOptions?.error || 'Request failed',
+              apiError.value.message
+            )
           }
           return undefined
         }

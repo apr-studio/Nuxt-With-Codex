@@ -1,5 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { extractApiError } from '~/utils/api-error'
+import { getRetryDelay, shouldRetry, type RetryOptions } from '~/utils/api-retry'
+import { emitErrorToast } from '~/utils/api-toast'
 import type { ApiResponse, ApiSuccess } from '#shared/api-response'
 
 // Wrapper around useFetch with unified API response handling, retry, and toast.
@@ -10,35 +12,6 @@ type UseApiFetchOptions<T> = Parameters<typeof useFetch<ApiResponse<T>>>[1] & {
   toastOptions?: {
     error?: string | false
   }
-}
-
-type RetryOptions = {
-  count?: number
-  delayMs?: number
-  backoff?: 'fixed' | 'exponential'
-  maxDelayMs?: number
-  retryOnCodes?: string[]
-}
-
-// Compute retry delay based on backoff strategy.
-function getRetryDelay(attempt: number, options: RetryOptions) {
-  const baseDelay = options.delayMs ?? 400
-  if (options.backoff === 'exponential') {
-    const maxDelay = options.maxDelayMs ?? 4000
-    return Math.min(maxDelay, baseDelay * 2 ** attempt)
-  }
-  return baseDelay
-}
-
-// Check whether a given API error code should be retried.
-function shouldRetry(errorCode: string | undefined, options: RetryOptions) {
-  if (!errorCode) {
-    return true
-  }
-  if (!options.retryOnCodes || options.retryOnCodes.length === 0) {
-    return true
-  }
-  return options.retryOnCodes.includes(errorCode)
 }
 
 // Returns payload + derived error state; auto-retries based on options.
@@ -72,7 +45,7 @@ export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFe
 
   const retryAttempts = ref(0)
   let retryTimer: ReturnType<typeof setTimeout> | null = null
-  let lastToastMessage = ''
+  const lastToastMessage = ref('')
 
   function clearRetryTimer() {
     if (retryTimer) {
@@ -85,7 +58,7 @@ export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFe
   watch([apiError, pending, isSuccess], () => {
     if (isSuccess.value) {
       retryAttempts.value = 0
-      lastToastMessage = ''
+      lastToastMessage.value = ''
       clearRetryTimer()
       return
     }
@@ -96,25 +69,25 @@ export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFe
 
     const options = retryOptions
     if (!options || (options.count ?? 0) <= 0) {
-      if (toastOptions?.error !== false && apiError.value.message !== lastToastMessage && import.meta.client) {
-        toast.add({
-          title: toastOptions?.error || 'Request failed',
-          description: apiError.value.message,
-          color: 'error'
-        })
-        lastToastMessage = apiError.value.message
+      if (toastOptions?.error !== false) {
+        emitErrorToast(
+          toast,
+          toastOptions?.error || 'Request failed',
+          apiError.value.message,
+          lastToastMessage
+        )
       }
       return
     }
 
     if (retryAttempts.value >= (options.count ?? 0)) {
-      if (toastOptions?.error !== false && apiError.value.message !== lastToastMessage && import.meta.client) {
-        toast.add({
-          title: toastOptions?.error || 'Request failed',
-          description: apiError.value.message,
-          color: 'error'
-        })
-        lastToastMessage = apiError.value.message
+      if (toastOptions?.error !== false) {
+        emitErrorToast(
+          toast,
+          toastOptions?.error || 'Request failed',
+          apiError.value.message,
+          lastToastMessage
+        )
       }
       return
     }
