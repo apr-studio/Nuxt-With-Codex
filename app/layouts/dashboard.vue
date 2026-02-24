@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <DashboardStableShell>
     <slot />
-  </div>
+  </DashboardStableShell>
 </template>

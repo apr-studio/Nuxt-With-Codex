@@ -35,7 +35,7 @@ const {
 </script>
 
 <template>
-  <DashboardStableShell>
+  <div>
     <div class="space-y-4">
       <!-- Users table + filters + pagination. -->
       <DashboardUsersListCard
@@ -79,5 +79,5 @@ const {
       @update:open="modalOpen = $event"
       @submit="submitForm($event)"
     />
-  </DashboardStableShell>
+  </div>
 </template>

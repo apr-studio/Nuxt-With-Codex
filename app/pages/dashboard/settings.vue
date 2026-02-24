@@ -28,7 +28,7 @@ const channelOptions = ['Email', 'SMS', 'Push']
 </script>
 
 <template>
-  <DashboardStableShell>
+  <div>
     <UCard>
       <template #header>
         <h2 class="font-semibold">
@@ -107,5 +107,5 @@ const channelOptions = ['Email', 'SMS', 'Push']
       title="Read-only settings"
       description="Only admin role can save settings."
     />
-  </DashboardStableShell>
+  </div>
 </template>
