@@ -1,60 +1,74 @@
-# Nuxt Starter Template
+# Nuxt UI Dashboard + Showcase
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+This project is a Nuxt 3 + Nuxt UI demo that includes:
+- A route navigator landing page.
+- A categorized Nuxt UI component showcase with live props examples.
+- A multi-page dashboard with role-based access, mock APIs, and charts.
 
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
+## Routes
 
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+- `/` Route navigator landing page.
+- `/ui-showcase` Categorized Nuxt UI component gallery.
+- `/dashboard/overview` KPI cards + activity feed.
+- `/dashboard/reports` ECharts report charts with loading UX.
+- `/dashboard/users` CRUD demo with modal + form validation.
+- `/dashboard/settings` Settings form with RBAC read-only state.
 
-<a href="https://starter-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png" width="830" height="466">
-  </picture>
-</a>
+## Key Features
 
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
+- Nuxt UI components across pages and dashboard shells.
+- Role-based access control via middleware and shared permissions.
+- API response schema normalization with typed success/failure.
+- Zod runtime validation on server responses.
+- Unified `useApiFetch` / `useApiMutation` with retry + toast.
+- Global route-loading overlay for dashboard navigation.
+- ECharts-powered report modules with fallback data.
 
-## Quick Start
+## Project Structure
 
-```bash [Terminal]
-npm create nuxt@latest -- -t github:nuxt-ui-templates/starter
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
+- `app/pages` UI routes and dashboard pages.
+- `app/components/dashboard` Dashboard shell and feature components.
+- `app/composables` Shared UI/data composables.
+- `app/constants` UI constants for reports/loading.
+- `server/api` Mock APIs for dashboard + users.
+- `server/schemas` Zod schemas for API runtime validation.
+- `shared` Shared types and dashboard config.
 
 ## Setup
 
-Make sure to install the dependencies:
+Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-## Development Server
+Generate Prisma client and seed dev data:
 
-Start the development server on `http://localhost:3000`:
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+## Development
 
 ```bash
 pnpm dev
 ```
 
-## Production
+## Scripts
 
-Build the application for production:
+- `pnpm dev` Start the dev server.
+- `pnpm build` Build for production.
+- `pnpm preview` Preview production build.
+- `npm run lint` Lint the codebase.
+- `npm run typecheck` Typecheck with Nuxt.
+- `npm run db:generate` Prisma client generation.
+- `npm run db:push` Apply schema to local DB.
+- `npm run db:seed` Seed mock data.
 
-```bash
-pnpm build
-```
+## Notes
 
-Locally preview production build:
-
-```bash
-pnpm preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- The dashboard uses a role cookie (`admin`, `editor`, `viewer`) to simulate RBAC.
+- Reports use fallback data when API data is missing for a range.
+- Charts are rendered client-side via `EChartClient`.
