@@ -3,14 +3,18 @@ import type { AppRole, Permission } from '#shared/rbac'
 
 export const DASHBOARD_FORBIDDEN_REDIRECT = '/dashboard/overview?forbidden=1'
 
-export function getRoutePermission(meta: Record<string, unknown>): Permission | undefined {
-  return meta.permission as Permission | undefined
+type DashboardPageMeta = {
+  permission?: Permission
+}
+
+export function getRoutePermission(meta: DashboardPageMeta): Permission | undefined {
+  return meta.permission
 }
 
 export function getDashboardGuardRedirect(
   role: AppRole,
   path: string,
-  meta: Record<string, unknown>
+  meta: DashboardPageMeta
 ): string | undefined {
   if (!path.startsWith('/dashboard')) {
     return

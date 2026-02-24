@@ -1,4 +1,6 @@
-export type AppRole = 'admin' | 'editor' | 'viewer'
+export const APP_ROLES = ['admin', 'editor', 'viewer'] as const
+
+export type AppRole = typeof APP_ROLES[number]
 
 export type Permission
   = | 'dashboard:view'
@@ -35,11 +37,12 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
   ]
 }
 
+export function isAppRole(value: string | undefined | null): value is AppRole {
+  return APP_ROLES.includes(value as AppRole)
+}
+
 export function normalizeRole(value: string | undefined | null): AppRole {
-  if (value === 'admin' || value === 'editor' || value === 'viewer') {
-    return value
-  }
-  return 'viewer'
+  return isAppRole(value) ? value : 'viewer'
 }
 
 export function hasPermission(role: AppRole, permission: Permission): boolean {
