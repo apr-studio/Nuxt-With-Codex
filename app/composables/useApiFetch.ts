@@ -90,7 +90,7 @@ export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFe
 
     const options = retryOptions
     if (!options || (options.count ?? 0) <= 0) {
-      if (toastOptions?.error !== false && apiError.value.message !== lastToastMessage && process.client) {
+      if (toastOptions?.error !== false && apiError.value.message !== lastToastMessage && import.meta.client) {
         toast.add({
           title: toastOptions?.error || 'Request failed',
           description: apiError.value.message,
@@ -102,7 +102,7 @@ export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFe
     }
 
     if (retryAttempts.value >= (options.count ?? 0)) {
-      if (toastOptions?.error !== false && apiError.value.message !== lastToastMessage && process.client) {
+      if (toastOptions?.error !== false && apiError.value.message !== lastToastMessage && import.meta.client) {
         toast.add({
           title: toastOptions?.error || 'Request failed',
           description: apiError.value.message,

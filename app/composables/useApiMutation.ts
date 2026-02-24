@@ -5,11 +5,23 @@ import type { ApiResponse } from '#shared/api-response'
 type Method = 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 type MaybeRefGetter<T> = T | Ref<T> | (() => T)
 type MutationBody = Record<string, unknown> | BodyInit | null
+type RetryOptions = {
+  count?: number
+  delayMs?: number
+  backoff?: 'fixed' | 'exponential'
+  maxDelayMs?: number
+  retryOnCodes?: string[]
+}
 
 type MutationDefaults = {
   url?: MaybeRefGetter<string>
   method?: Method
   baseURL?: string
+  retryOptions?: RetryOptions
+  toastOptions?: {
+    success?: string | false
+    error?: string | false
+  }
 }
 
 type MutationInput<TBody extends MutationBody> = {
@@ -21,6 +33,26 @@ type MutationInput<TBody extends MutationBody> = {
 export function useApiMutation<TPayload, TBody extends MutationBody = Record<string, unknown>>(defaults: MutationDefaults = {}) {
   const pending = ref(false)
   const apiError = ref<{ code: string, message: string } | null>(null)
+  const toast = useToast()
+
+  function getRetryDelay(attempt: number, options: RetryOptions) {
+    const baseDelay = options.delayMs ?? 400
+    if (options.backoff === 'exponential') {
+      const maxDelay = options.maxDelayMs ?? 4000
+      return Math.min(maxDelay, baseDelay * 2 ** attempt)
+    }
+    return baseDelay
+  }
+
+  function shouldRetry(errorCode: string | undefined, options: RetryOptions) {
+    if (!errorCode) {
+      return true
+    }
+    if (!options.retryOnCodes || options.retryOnCodes.length === 0) {
+      return true
+    }
+    return options.retryOnCodes.includes(errorCode)
+  }
 
   async function mutate(input: MutationInput<TBody> = {}) {
     const resolvedUrl = input.url || (defaults.url ? toValue(defaults.url) : '')
@@ -36,23 +68,60 @@ export function useApiMutation<TPayload, TBody extends MutationBody = Record<str
     pending.value = true
     apiError.value = null
 
+    const retryOptions = defaults.retryOptions
+    const maxRetries = retryOptions?.count ?? 0
+
     try {
-      const response = await $fetch<ApiResponse<TPayload>>(resolvedUrl, {
-        baseURL: defaults.baseURL || useRuntimeConfig().app.baseURL,
-        method,
-        body: input.body
-      })
+      for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+        try {
+          const response = await $fetch<ApiResponse<TPayload>>(resolvedUrl, {
+            baseURL: defaults.baseURL || useRuntimeConfig().app.baseURL,
+            method,
+            body: input.body
+          })
 
-      if (!response.success) {
-        apiError.value = response.error
-        return undefined
+          if (!response.success) {
+            apiError.value = response.error
+            if (retryOptions && attempt < maxRetries && shouldRetry(apiError.value?.code, retryOptions)) {
+              const delay = getRetryDelay(attempt, retryOptions)
+              await new Promise(resolve => setTimeout(resolve, delay))
+              continue
+            }
+            if (defaults.toastOptions?.error !== false && import.meta.client) {
+              toast.add({
+                title: defaults.toastOptions?.error || 'Request failed',
+                description: apiError.value.message,
+                color: 'error'
+              })
+            }
+            return undefined
+          }
+
+          if (defaults.toastOptions?.success && import.meta.client) {
+            toast.add({
+              title: defaults.toastOptions.success,
+              color: 'success'
+            })
+          }
+          return response.data
+        } catch (error) {
+          apiError.value = extractApiError(error)
+            || { code: 'REQUEST_FAILED', message: 'Request failed.' }
+          if (retryOptions && attempt < maxRetries && shouldRetry(apiError.value?.code, retryOptions)) {
+            const delay = getRetryDelay(attempt, retryOptions)
+            await new Promise(resolve => setTimeout(resolve, delay))
+            continue
+          }
+          if (defaults.toastOptions?.error !== false && import.meta.client) {
+            toast.add({
+              title: defaults.toastOptions?.error || 'Request failed',
+              description: apiError.value.message,
+              color: 'error'
+            })
+          }
+          return undefined
+        }
       }
-
-      return response.data
-    } catch (error) {
-      apiError.value = extractApiError(error)
-        || { code: 'REQUEST_FAILED', message: 'Request failed.' }
-      return undefined
     } finally {
       pending.value = false
     }
