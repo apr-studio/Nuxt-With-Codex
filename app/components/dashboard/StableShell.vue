@@ -5,7 +5,24 @@ import { useDashboardRole } from '~/composables/useDashboardRole'
 // Dashboard shell: sidebar + top bar + slot content.
 const route = useRoute()
 const sidebarOpen = ref(false)
+const router = useRouter()
 const { role, normalizedRole, can } = useDashboardRole()
+
+const logoutMutation = useApiMutation<{ ok: true }>({
+  url: useApiPath('/api/auth/logout'),
+  method: 'POST',
+  toastOptions: {
+    success: 'Signed out',
+    error: 'Sign-out failed'
+  }
+})
+
+async function handleLogout() {
+  const result = await logoutMutation.mutate()
+  if (result) {
+    await router.push('/login?logout=1')
+  }
+}
 
 // Active link highlight.
 const isActive = (to: string) => route.path === to
@@ -116,6 +133,15 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
                   icon="i-lucide-compass"
                 >
                   Routes
+                </UButton>
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-log-out"
+                  :loading="logoutMutation.pending.value"
+                  @click="handleLogout"
+                >
+                  Sign out
                 </UButton>
                 <UColorModeButton />
               </div>

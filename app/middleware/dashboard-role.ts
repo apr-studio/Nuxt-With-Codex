@@ -10,11 +10,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
   try {
     response = await fetcher<ApiResponse<AuthMeResponse>>(useApiPath('/api/auth/me'))
   } catch {
-    return navigateTo('/login')
+    return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
   }
 
   if (!response.success) {
-    return navigateTo('/login')
+    return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
   }
 
   const redirect = getDashboardGuardRedirect(

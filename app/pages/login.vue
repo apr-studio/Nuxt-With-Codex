@@ -21,8 +21,23 @@ const loginMutation = useApiMutation<{ role: string }, { email: string, role: st
 })
 
 const isSubmitting = computed(() => loginMutation.pending.value)
+const formErrors = ref<{ name?: string, message: string }[]>([])
+const logoutMessage = computed(() => route.query.logout === '1')
+const redirectTarget = computed(() =>
+  typeof route.query.redirect === 'string' ? route.query.redirect : ''
+)
 
 async function submit() {
+  formErrors.value = []
+  if (!formState.email.trim() || !/^\S+@\S+\.\S+$/.test(formState.email)) {
+    formErrors.value.push({ name: 'email', message: 'Email format is invalid.' })
+  }
+  if (!['admin', 'editor', 'viewer'].includes(formState.role)) {
+    formErrors.value.push({ name: 'role', message: 'Role is invalid.' })
+  }
+  if (formErrors.value.length) {
+    return
+  }
   const result = await loginMutation.mutate({
     body: {
       email: formState.email,
@@ -37,6 +52,16 @@ async function submit() {
     : '/dashboard/overview'
   await router.push(redirect)
 }
+
+async function logout() {
+  await $fetch(useApiPath('/api/auth/logout'), { method: 'POST' })
+}
+
+onMounted(async () => {
+  if (route.query.logout === '1') {
+    await logout()
+  }
+})
 </script>
 
 <template>
@@ -54,8 +79,26 @@ async function submit() {
           </div>
         </template>
 
+        <div class="space-y-3">
+          <UAlert
+            v-if="logoutMessage"
+            color="success"
+            variant="subtle"
+            title="Signed out"
+            description="You have been signed out successfully."
+          />
+          <UAlert
+            v-if="redirectTarget"
+            color="warning"
+            variant="subtle"
+            title="Sign in required"
+            :description="`Please sign in to access ${redirectTarget}.`"
+          />
+        </div>
+
         <UForm
           :state="formState"
+          :validate="() => formErrors"
           class="space-y-4"
           @submit="submit"
         >
