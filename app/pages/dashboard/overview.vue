@@ -2,6 +2,7 @@
 import type { ActivityResponse, KpiItem } from '#shared/dashboard-types'
 
 definePageMeta({
+  layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'dashboard:view'
 })

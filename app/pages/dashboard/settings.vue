@@ -2,6 +2,7 @@
 import { useDashboardRole } from '~/composables/useDashboardRole'
 
 definePageMeta({
+  layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'settings:view'
 })

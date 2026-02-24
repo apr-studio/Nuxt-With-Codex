@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
+  layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'dashboard:view'
 })

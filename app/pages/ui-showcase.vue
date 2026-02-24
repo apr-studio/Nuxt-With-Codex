@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default'
+})
+
 type CategoryKey = 'navigation' | 'feedback' | 'forms' | 'data' | 'layout'
 
 type PropRow = {

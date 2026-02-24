@@ -2,6 +2,7 @@
 import { useUsersCrud } from '~/composables/useUsersCrud'
 
 definePageMeta({
+  layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'users:view'
 })

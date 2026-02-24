@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default'
+})
+
 const routes = [
   {
     title: 'UI Showcase',

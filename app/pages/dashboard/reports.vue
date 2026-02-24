@@ -3,6 +3,7 @@ import { DASHBOARD_REPORT_CHART_HEIGHTS } from '~/constants/dashboard-reports'
 import { useDashboardReports } from '~/composables/useDashboardReports'
 
 definePageMeta({
+  layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'reports:view'
 })
