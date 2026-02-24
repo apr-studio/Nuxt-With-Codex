@@ -2,6 +2,7 @@
 import type { AppRole } from '#shared/rbac'
 import type { UserRow, UsersResponse, UserStatus } from '#shared/dashboard-types'
 
+// Users list card: filters, list, and pagination controls.
 const props = defineProps<{
   canCreate: boolean
   canUpdate: boolean
@@ -27,6 +28,7 @@ const emit = defineEmits<{
 <template>
   <UCard>
     <template #header>
+      <!-- Title + create action. -->
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 class="font-semibold">
           Users
@@ -41,6 +43,7 @@ const emit = defineEmits<{
       </div>
     </template>
 
+    <!-- Filters row. -->
     <div class="flex flex-wrap items-center gap-3">
       <UInput
         :model-value="props.query"
@@ -63,6 +66,7 @@ const emit = defineEmits<{
       </UBadge>
     </div>
 
+    <!-- Users list. -->
     <div class="mt-4 space-y-2">
       <UCard
         v-for="user in (props.usersData?.items || [])"
@@ -117,6 +121,7 @@ const emit = defineEmits<{
     </div>
 
     <template #footer>
+      <!-- Pagination footer. -->
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">
           Total matched: {{ props.usersData?.total || 0 }}

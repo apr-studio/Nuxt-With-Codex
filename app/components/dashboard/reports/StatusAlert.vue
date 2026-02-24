@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Status messaging for report API state and fallback usage.
 defineProps<{
   errorMessage: string
   hasAnyData: boolean

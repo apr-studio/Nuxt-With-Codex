@@ -7,6 +7,7 @@ type FormError = {
   message: string
 }
 
+// User create/edit modal with form validation.
 const props = defineProps<{
   open: boolean
   title: string
@@ -38,6 +39,7 @@ const emit = defineEmits<{
   }]
 }>()
 
+// Local copy of form state to avoid mutating props directly.
 const localForm = reactive({
   name: '',
   email: '',
@@ -45,6 +47,7 @@ const localForm = reactive({
   status: 'active' as UserStatus
 })
 
+// Sync local form whenever modal opens or parent form state changes.
 watch(
   () => [props.open, props.formState.name, props.formState.email, props.formState.role, props.formState.status] as const,
   () => {

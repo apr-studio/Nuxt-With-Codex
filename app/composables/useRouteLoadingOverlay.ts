@@ -3,6 +3,7 @@ type UseRouteLoadingOverlayOptions = {
   retryHintAfterMs?: number
 }
 
+// Global route-change overlay with optional retry hint.
 export function useRouteLoadingOverlay(options: UseRouteLoadingOverlayOptions = {}) {
   const route = useRoute()
   const router = useRouter()
@@ -34,6 +35,7 @@ export function useRouteLoadingOverlay(options: UseRouteLoadingOverlayOptions = 
     showLoadingRetryHint.value = false
   }
 
+  // Start overlay on route change.
   const removeBeforeEach = router.beforeEach((to, from) => {
     if (to.fullPath === from.fullPath) {
       return
@@ -51,6 +53,7 @@ export function useRouteLoadingOverlay(options: UseRouteLoadingOverlayOptions = 
     }, retryHintAfterMs)
   })
 
+  // Hide overlay after navigation with minimum duration.
   const removeAfterEach = router.afterEach(() => {
     if (!isRouteLoading.value) {
       return
@@ -65,15 +68,18 @@ export function useRouteLoadingOverlay(options: UseRouteLoadingOverlayOptions = 
     }, remaining)
   })
 
+  // Clear overlay on navigation error.
   const removeOnError = router.onError(() => {
     clearOverlay()
   })
 
+  // Re-run the current route to attempt recovery.
   async function retryCurrentRoute() {
     clearOverlay()
     await router.replace(route.fullPath)
   }
 
+  // Cleanup router hooks and timers.
   onBeforeUnmount(() => {
     clearOverlay()
     removeBeforeEach()

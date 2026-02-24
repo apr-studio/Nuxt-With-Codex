@@ -2,16 +2,20 @@
 import { DASHBOARD_NAV_ITEMS, getDashboardPageTitle } from '#shared/dashboard-shell'
 import { useDashboardRole } from '~/composables/useDashboardRole'
 
+// Dashboard shell: sidebar + top bar + slot content.
 const route = useRoute()
 const sidebarOpen = ref(false)
 const { role, normalizedRole, can } = useDashboardRole()
 
+// Active link highlight.
 const isActive = (to: string) => route.path === to
 
+// Filter nav items by permission.
 const visibleNavItems = computed(() =>
   DASHBOARD_NAV_ITEMS.filter(item => can(item.permission))
 )
 
+// Page title derived from current route.
 const pageTitle = computed(() => getDashboardPageTitle(route.path))
 </script>
 
@@ -19,6 +23,7 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
   <div class="min-h-screen bg-default">
     <div class="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
       <div class="grid gap-4 lg:grid-cols-[260px_1fr]">
+        <!-- Desktop sidebar. -->
         <aside class="hidden lg:block">
           <UCard>
             <template #header>
@@ -33,6 +38,7 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
               </div>
             </template>
 
+            <!-- Sidebar navigation. -->
             <nav class="space-y-1">
               <NuxtLink
                 v-for="item in visibleNavItems"
@@ -69,10 +75,12 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
           </UCard>
         </aside>
 
+        <!-- Main content area. -->
         <section class="space-y-4">
           <UCard>
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="flex items-center gap-2">
+                <!-- Mobile menu trigger. -->
                 <UButton
                   color="neutral"
                   variant="outline"
@@ -89,6 +97,7 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
                 </h1>
               </div>
               <div class="flex items-center gap-2">
+                <!-- Role switcher + quick links. -->
                 <USelect
                   v-model="role"
                   :items="['admin', 'editor', 'viewer']"
@@ -118,6 +127,7 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
       </div>
     </div>
 
+    <!-- Mobile drawer for sidebar navigation. -->
     <UDrawer
       v-model:open="sidebarOpen"
       direction="left"

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { ActivityResponse, KpiItem } from '#shared/dashboard-types'
 
+// Role-guarded dashboard overview.
 definePageMeta({
   layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'dashboard:view'
 })
 
+// Fetch KPI cards + activity feed.
 const { payload: kpis, apiError: kpiApiError } = useApiFetch<KpiItem[]>(useApiPath('/api/dashboard/stats'), {
   defaultData: []
 })
@@ -16,12 +18,14 @@ const { payload: activity, apiError: activityApiError } = useApiFetch<ActivityRe
 <template>
   <DashboardStableShell>
     <div class="space-y-6">
+      <!-- Aggregate API error notice. -->
       <DashboardApiErrorAlert
         v-if="kpiApiError || activityApiError"
         title="Dashboard API error"
         :message="kpiApiError?.message || activityApiError?.message || 'Failed to load dashboard data.'"
       />
 
+      <!-- KPI cards. -->
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <UCard
           v-for="kpi in (kpis || [])"
@@ -52,6 +56,7 @@ const { payload: activity, apiError: activityApiError } = useApiFetch<ActivityRe
         </UCard>
       </div>
 
+      <!-- Activity feed + alerts panel. -->
       <div class="grid gap-4 xl:grid-cols-3">
         <UCard class="xl:col-span-2">
           <template #header>

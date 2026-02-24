@@ -4,6 +4,7 @@ import { DASHBOARD_REPORT_LOADING } from '~/constants/dashboard-loading'
 import { useApiFetch } from '~/composables/useApiFetch'
 import type { ReportMetrics, ReportRange, ReportResponse } from '#shared/dashboard-reports'
 
+// Report data source fallback for missing ranges.
 const fallbackMetrics: Record<ReportRange, ReportMetrics> = DEFAULT_REPORT_METRICS
 
 type UseDashboardReportsDataOptions = {
@@ -11,6 +12,7 @@ type UseDashboardReportsDataOptions = {
   sectionMinLoadingMs?: number
 }
 
+// Manages report data, loading states, and range changes.
 export function useDashboardReportsData(options: UseDashboardReportsDataOptions = {}) {
   const { payload, apiError, refresh } = useApiFetch<ReportResponse>(useApiPath('/api/dashboard/reports'), {
     defaultData: createDefaultReportResponse()
@@ -18,10 +20,12 @@ export function useDashboardReportsData(options: UseDashboardReportsDataOptions 
   const initialMinLoadingMs = options.initialMinLoadingMs ?? DASHBOARD_REPORT_LOADING.initialMinMs
   const sectionMinLoadingMs = options.sectionMinLoadingMs ?? DASHBOARD_REPORT_LOADING.sectionMinMs
 
+  // Loading states for first load vs. range switching.
   const isInitialLoading = ref(true)
   const isSectionLoading = ref(false)
   const reportRange = ref<ReportRange>('Last 30 days')
 
+  // Current range metrics, falling back to defaults when missing.
   const currentMetrics = computed<ReportMetrics>(() => {
     const source = payload.value?.metrics?.[reportRange.value] || fallbackMetrics[reportRange.value]
     if (source) {
@@ -42,6 +46,7 @@ export function useDashboardReportsData(options: UseDashboardReportsDataOptions 
     await new Promise(resolve => setTimeout(resolve, ms))
   }
 
+  // Show full-page loading for at least the configured duration.
   async function showInitialLoading(task: () => Promise<unknown>) {
     isInitialLoading.value = true
     try {
@@ -56,6 +61,7 @@ export function useDashboardReportsData(options: UseDashboardReportsDataOptions 
     }
   }
 
+  // Show partial loading while switching ranges or refreshing.
   async function showSectionLoading(task?: () => Promise<unknown>) {
     isSectionLoading.value = true
     try {
@@ -72,11 +78,13 @@ export function useDashboardReportsData(options: UseDashboardReportsDataOptions 
     }
   }
 
+  // Ensure initial overlay runs once on mount.
   onMounted(async () => {
     await nextTick()
     await showInitialLoading(async () => {})
   })
 
+  // Range changes trigger a section-level loading state.
   watch(reportRange, async () => {
     await showSectionLoading()
   })

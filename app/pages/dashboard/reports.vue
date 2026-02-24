@@ -2,12 +2,14 @@
 import { DASHBOARD_REPORT_CHART_HEIGHTS } from '~/constants/dashboard-reports'
 import { useDashboardReports } from '~/composables/useDashboardReports'
 
+// Role-guarded reports page.
 definePageMeta({
   layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'reports:view'
 })
 
+// Combined data + chart options for the report UI.
 const {
   availableRanges,
   apiError,
@@ -28,10 +30,12 @@ const {
 <template>
   <DashboardStableShell>
     <div class="relative space-y-4">
+      <!-- Full-screen overlay shown on first load only. -->
       <DashboardReportsInitialOverlay v-if="isInitialLoading" />
 
       <UCard>
         <template #header>
+          <!-- Filters + range switcher. -->
           <DashboardReportsFiltersHeader
             :range="reportRange"
             :ranges="availableRanges"
@@ -41,18 +45,21 @@ const {
           />
         </template>
 
+        <!-- Inline status and fallback hints. -->
         <DashboardReportsStatusAlert
           :error-message="apiError?.message || ''"
           :has-any-data="hasAnyData"
           :is-using-fallback="isUsingFallback"
         />
 
+        <!-- Summary KPI cards for the active range. -->
         <DashboardReportsSummaryCards
           :cards="currentMetrics.summary"
           :is-loading="isSectionLoading"
         />
       </UCard>
 
+      <!-- Trend + revenue charts. -->
       <div class="grid gap-4 xl:grid-cols-2">
         <DashboardReportsChartCard
           title="Traffic Trend"
@@ -71,6 +78,7 @@ const {
         />
       </div>
 
+      <!-- Acquisition mix chart. -->
       <DashboardReportsChartCard
         title="Acquisition Mix"
         :option="acquisitionPieOption"

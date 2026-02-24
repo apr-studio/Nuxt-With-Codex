@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Lightweight wrapper for consistent API error alerts.
 defineProps<{
   message: string
   title?: string

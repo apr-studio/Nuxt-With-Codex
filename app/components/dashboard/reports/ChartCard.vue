@@ -2,6 +2,7 @@
 import type { EChartsOption } from 'echarts'
 import EChartClient from '~/components/charts/EChartClient.vue'
 
+// Report chart card with optional loading and fallback badge.
 defineProps<{
   title: string
   option: EChartsOption
@@ -14,6 +15,7 @@ defineProps<{
 <template>
   <UCard>
     <template #header>
+      <!-- Card title + fallback badge. -->
       <div class="flex items-center justify-between gap-2">
         <h3 class="font-semibold">
           {{ title }}
@@ -28,6 +30,7 @@ defineProps<{
         </UBadge>
       </div>
     </template>
+    <!-- Loading skeleton or chart render. -->
     <USkeleton
       v-if="isLoading"
       :class="heightClass"

@@ -1,8 +1,10 @@
 <script setup lang="ts">
+// Use default layout (top nav + footer) for the showcase page.
 definePageMeta({
   layout: 'default'
 })
 
+// Demo model types for categorized component examples.
 type CategoryKey = 'navigation' | 'feedback' | 'forms' | 'data' | 'layout'
 
 type PropRow = {
@@ -19,6 +21,7 @@ type DemoItem = {
   props: PropRow[]
 }
 
+// Stable random seed per session so examples stay consistent during navigation.
 const seed = useState('showcase-seed-v2', () => Math.floor(Math.random() * 1_000_000))
 
 function randomAt<T>(list: T[], index: number) {
@@ -35,6 +38,7 @@ const randomText = [
   'This content changes with a random seed per app session.'
 ]
 
+// Category tabs rendered at the top.
 const categories: { key: CategoryKey, label: string, icon: string }[] = [
   { key: 'navigation', label: 'Navigation', icon: 'i-lucide-compass' },
   { key: 'feedback', label: 'Feedback', icon: 'i-lucide-bell' },
@@ -43,6 +47,7 @@ const categories: { key: CategoryKey, label: string, icon: string }[] = [
   { key: 'layout', label: 'Layout', icon: 'i-lucide-layout-grid' }
 ]
 
+// All component demos grouped by category, with props examples.
 const demos: DemoItem[] = [
   {
     id: 'breadcrumb',
@@ -255,12 +260,14 @@ const demos: DemoItem[] = [
   }
 ]
 
+// Table columns for props examples.
 const propColumns = [
   { accessorKey: 'prop', header: 'Prop' },
   { accessorKey: 'value', header: 'Example Value' },
   { accessorKey: 'description', header: 'Description' }
 ]
 
+// Demo data for UI components below.
 const breadcrumbItems = [
   { label: 'Home', to: '/' },
   { label: 'UI Showcase', to: '/ui-showcase' }
@@ -303,6 +310,7 @@ const cityOptions = ['Taipei', 'Taichung', 'Kaohsiung', 'Tainan', 'Hsinchu']
 const checkOptions = ['Email', 'SMS', 'Push']
 const periodOptions = ['Daily', 'Weekly', 'Monthly']
 
+// Pagination state per category.
 const activeCategory = ref<CategoryKey>('navigation')
 const pageSize = 4
 const pageByCategory = reactive<Record<CategoryKey, number>>({
@@ -313,6 +321,7 @@ const pageByCategory = reactive<Record<CategoryKey, number>>({
   layout: 1
 })
 
+// Counts per category, used in tab labels.
 const categoryCount = computed(() =>
   categories.reduce<Record<CategoryKey, number>>((acc, category) => {
     acc[category.key] = demos.filter(demo => demo.category === category.key).length
@@ -326,6 +335,7 @@ const categoryCount = computed(() =>
   })
 )
 
+// Current page uses category-specific page index.
 const currentPage = computed({
   get: () => pageByCategory[activeCategory.value],
   set: (value: number) => {
@@ -333,17 +343,21 @@ const currentPage = computed({
   }
 })
 
+// Filter demos by active category.
 const filteredDemos = computed(() =>
   demos.filter(demo => demo.category === activeCategory.value)
 )
 
+// Total items for pagination controls.
 const totalForCurrent = computed(() => filteredDemos.value.length)
 
+// Slice demos based on the current page.
 const pagedDemos = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   return filteredDemos.value.slice(start, start + pageSize)
 })
 
+// Keep page index in bounds when category or count changes.
 watch([activeCategory, totalForCurrent], () => {
   const maxPage = Math.max(1, Math.ceil(totalForCurrent.value / pageSize))
   if (currentPage.value > maxPage) {
@@ -354,8 +368,10 @@ watch([activeCategory, totalForCurrent], () => {
 
 <template>
   <UContainer class="py-8 space-y-6">
+    <!-- Route breadcrumb. -->
     <UBreadcrumb :items="breadcrumbItems" />
 
+    <!-- Page header and category tabs. -->
     <UCard>
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -392,6 +408,7 @@ watch([activeCategory, totalForCurrent], () => {
     </UCard>
 
     <div class="grid gap-4 lg:grid-cols-2">
+      <!-- Demo cards (one per component). -->
       <UCard
         v-for="demo in pagedDemos"
         :key="demo.id"
@@ -667,6 +684,7 @@ watch([activeCategory, totalForCurrent], () => {
     </div>
 
     <UCard>
+      <!-- Pagination controls for the active category. -->
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">
           Category: {{ categories.find(c => c.key === activeCategory)?.label }}

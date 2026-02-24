@@ -1,4 +1,5 @@
 <template>
+  <!-- Full-page overlay shown during initial report load. -->
   <div class="absolute inset-0 z-20 rounded-lg bg-default/80 backdrop-blur-[1px] p-4">
     <UCard class="max-w-xl mx-auto mt-8">
       <template #header>

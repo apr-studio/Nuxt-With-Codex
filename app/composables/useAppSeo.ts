@@ -1,3 +1,4 @@
+// Shared SEO defaults for the entire app.
 export const useAppSeo = () => {
   useHead({
     htmlAttrs: { lang: 'en' },

@@ -7,12 +7,14 @@ type FormError = {
   message: string
 }
 
+// Users page state: list, filters, pagination, and modal CRUD flow.
 export function useUsersCrud() {
   const { normalizedRole, can } = useDashboardRole()
   const canCreate = computed(() => can('users:create'))
   const canUpdate = computed(() => can('users:update'))
   const canDelete = computed(() => can('users:delete'))
 
+  // List query params drive the users table results.
   const usersApi = useApiPath('/api/users')
   const query = ref('')
   const statusFilter = ref<'all' | UserStatus>('all')
@@ -26,6 +28,7 @@ export function useUsersCrud() {
     pageSize
   }))
 
+  // Fetch list data with retry + toast on failures.
   const { payload: usersData, pending, refresh } = useApiFetch<UsersResponse>(usersApi, {
     query: queryParams,
     retryOptions: {
@@ -45,10 +48,12 @@ export function useUsersCrud() {
     }
   })
 
+  // Reset to first page when filters change.
   watch([query, statusFilter], () => {
     page.value = 1
   })
 
+  // Modal state + form state for create/edit.
   const modalOpen = ref(false)
   const editingUserId = ref<number | null>(null)
   const actionError = ref('')
@@ -63,6 +68,7 @@ export function useUsersCrud() {
 
   const modalTitle = computed(() => editingUserId.value ? 'Edit User' : 'Create User')
 
+  // Mutations for create/update/delete.
   const createUserMutation = useApiMutation<{ user: UserRow }, typeof formState>({
     method: 'POST',
     retryOptions: {
@@ -102,10 +108,12 @@ export function useUsersCrud() {
       error: 'Delete failed'
     }
   })
+  // Combined mutation state for disabling UI.
   const isMutating = computed(() =>
     createUserMutation.pending.value || updateUserMutation.pending.value || deleteUserMutation.pending.value
   )
 
+  // Reset form to defaults and clear errors.
   function resetForm() {
     editingUserId.value = null
     formState.name = ''
@@ -115,6 +123,7 @@ export function useUsersCrud() {
     actionError.value = ''
   }
 
+  // Open create modal (with permission guard).
   function openCreateModal() {
     if (!canCreate.value) {
       return
@@ -123,6 +132,7 @@ export function useUsersCrud() {
     modalOpen.value = true
   }
 
+  // Open edit modal and populate form.
   function openEditModal(user: UserRow) {
     if (!canUpdate.value) {
       return
@@ -136,6 +146,7 @@ export function useUsersCrud() {
     modalOpen.value = true
   }
 
+  // Client-side validation for the modal form.
   function validateForm(state: typeof formState): FormError[] {
     const errors: FormError[] = []
 
@@ -162,6 +173,7 @@ export function useUsersCrud() {
     formState.status = nextState.status
   }
 
+  // Create or update a user based on current mode.
   async function submitForm(nextState?: UserFormState) {
     actionError.value = ''
     if (nextState) {
@@ -200,6 +212,7 @@ export function useUsersCrud() {
     await refresh()
   }
 
+  // Delete a user and refresh list.
   async function removeUser(id: number) {
     actionError.value = ''
     if (!canDelete.value) {

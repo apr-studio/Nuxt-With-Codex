@@ -1,8 +1,10 @@
 <script setup lang="ts">
+// Force the default layout on the landing page.
 definePageMeta({
   layout: 'default'
 })
 
+// Cards for the route navigator grid.
 const routes = [
   {
     title: 'UI Showcase',
@@ -35,12 +37,14 @@ const routes = [
 
 <template>
   <UContainer class="py-10 space-y-8">
+    <!-- Page hero introduction with primary CTA. -->
     <UPageHero
       title="Nuxt.js + Nuxt UI Route Navigator"
       description="The project is ready. Use the links below to jump to the UI demo route."
       :links="[{ label: 'Open UI Showcase', to: '/ui-showcase', icon: 'i-lucide-arrow-right' }]"
     />
 
+    <!-- Card grid of navigation targets. -->
     <UPageGrid>
       <UPageCard
         v-for="route in routes"

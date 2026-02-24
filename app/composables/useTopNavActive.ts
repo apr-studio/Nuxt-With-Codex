@@ -1,3 +1,4 @@
+// Helper for marking top nav buttons active based on current route.
 export const useTopNavActive = () => {
   const route = useRoute()
 

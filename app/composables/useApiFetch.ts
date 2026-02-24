@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue'
 import { extractApiError } from '~/utils/api-error'
 import type { ApiResponse, ApiSuccess } from '#shared/api-response'
 
+// Wrapper around useFetch with unified API response handling, retry, and toast.
 type UseApiFetchRequest<T> = Parameters<typeof useFetch<ApiResponse<T>>>[0]
 type UseApiFetchOptions<T> = Parameters<typeof useFetch<ApiResponse<T>>>[1] & {
   defaultData?: T
@@ -19,6 +20,7 @@ type RetryOptions = {
   retryOnCodes?: string[]
 }
 
+// Compute retry delay based on backoff strategy.
 function getRetryDelay(attempt: number, options: RetryOptions) {
   const baseDelay = options.delayMs ?? 400
   if (options.backoff === 'exponential') {
@@ -28,6 +30,7 @@ function getRetryDelay(attempt: number, options: RetryOptions) {
   return baseDelay
 }
 
+// Check whether a given API error code should be retried.
 function shouldRetry(errorCode: string | undefined, options: RetryOptions) {
   if (!errorCode) {
     return true
@@ -38,6 +41,7 @@ function shouldRetry(errorCode: string | undefined, options: RetryOptions) {
   return options.retryOnCodes.includes(errorCode)
 }
 
+// Returns payload + derived error state; auto-retries based on options.
 export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFetchOptions<T> = {}) {
   const { defaultData, retryOptions, toastOptions, ...fetchOptions } = options
 
@@ -53,6 +57,7 @@ export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFe
       : {})
   })
 
+  // Toasts are only shown on client.
   const toast = useToast()
   const payload = computed<T | undefined>(() =>
     data.value?.success ? data.value.data : undefined
@@ -76,6 +81,7 @@ export function useApiFetch<T>(request: UseApiFetchRequest<T>, options: UseApiFe
     }
   }
 
+  // Retry and toast handling whenever error/pending/success changes.
   watch([apiError, pending, isSuccess], () => {
     if (isSuccess.value) {
       retryAttempts.value = 0

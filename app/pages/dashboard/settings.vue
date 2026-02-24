@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useDashboardRole } from '~/composables/useDashboardRole'
 
+// Role-guarded settings page.
 definePageMeta({
   layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'settings:view'
 })
 
+// Local-only settings state for the demo.
 const state = reactive({
   workspaceName: 'Nuxt Admin Workspace',
   timezone: 'Asia/Taipei',
@@ -16,6 +18,7 @@ const state = reactive({
   incidentMode: true
 })
 
+// Role permission helper.
 const { can } = useDashboardRole()
 const canWriteSettings = computed(() => can('settings:write'))
 
@@ -33,6 +36,7 @@ const channelOptions = ['Email', 'SMS', 'Push']
         </h2>
       </template>
 
+      <!-- Settings form (read-only when role lacks write). -->
       <UForm
         :state="state"
         class="space-y-4"
@@ -95,6 +99,7 @@ const channelOptions = ['Email', 'SMS', 'Push']
       </UForm>
     </UCard>
 
+    <!-- Read-only notice when lacking permission. -->
     <UAlert
       v-if="!canWriteSettings"
       color="warning"

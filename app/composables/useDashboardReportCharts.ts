@@ -4,6 +4,7 @@ import type { EChartsOption } from 'echarts'
 import type { ReportMetrics, ReportRange } from '#shared/dashboard-reports'
 import { DASHBOARD_REPORT_GRIDS, DASHBOARD_REPORT_LABELS, DASHBOARD_REPORT_THEME } from '~/constants/dashboard-reports'
 
+// Builds ECharts options for report charts based on metrics + color mode.
 type MaybeRefOrGetter<T> = T | Ref<T> | ComputedRef<T> | (() => T)
 
 export function useDashboardReportCharts(options: {
@@ -12,6 +13,7 @@ export function useDashboardReportCharts(options: {
 }) {
   const colorMode = useColorMode()
 
+  // Theme-aware colors for axes, tooltips, and series.
   const isDark = computed(() => colorMode.value === 'dark')
   const palette = computed(() => {
     return isDark.value
@@ -23,11 +25,13 @@ export function useDashboardReportCharts(options: {
   const tooltipBg = computed(() => (isDark.value ? DASHBOARD_REPORT_THEME.tooltip.dark.background : DASHBOARD_REPORT_THEME.tooltip.light.background))
   const tooltipText = computed(() => (isDark.value ? DASHBOARD_REPORT_THEME.tooltip.dark.text : DASHBOARD_REPORT_THEME.tooltip.light.text))
 
+  // X-axis labels depend on the active report range.
   const trendLabels = computed(() => {
     const reportRange = toValue(options.reportRange)
     return DASHBOARD_REPORT_LABELS[reportRange]
   })
 
+  // Traffic trend line chart.
   const trendOption = computed<EChartsOption>(() => {
     const currentMetrics = toValue(options.currentMetrics)
     return {
@@ -63,6 +67,7 @@ export function useDashboardReportCharts(options: {
     }
   })
 
+  // Revenue by channel bar chart.
   const revenueBarOption = computed<EChartsOption>(() => {
     const currentMetrics = toValue(options.currentMetrics)
     return {
@@ -96,6 +101,7 @@ export function useDashboardReportCharts(options: {
     }
   })
 
+  // Acquisition mix pie chart.
   const acquisitionPieOption = computed<EChartsOption>(() => {
     const currentMetrics = toValue(options.currentMetrics)
     return {

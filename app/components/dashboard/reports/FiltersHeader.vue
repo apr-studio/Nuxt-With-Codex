@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ReportRange } from '#shared/dashboard-reports'
 
+// Reports header with range selector and refresh action.
 const props = defineProps<{
   ranges: readonly ReportRange[]
   range: ReportRange
@@ -15,6 +16,7 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex flex-wrap items-center justify-between gap-3">
+    <!-- Title + fallback indicator. -->
     <div class="flex items-center gap-2">
       <h2 class="font-semibold">
         Reports
@@ -28,6 +30,7 @@ const emit = defineEmits<{
       </UBadge>
     </div>
     <div class="flex items-center gap-2">
+      <!-- Range selector + refresh button. -->
       <USelect
         :model-value="props.range"
         :items="[...props.ranges]"

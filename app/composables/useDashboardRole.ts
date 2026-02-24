@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import { hasPermission, normalizeRole } from '#shared/rbac'
 import type { AppRole, Permission } from '#shared/rbac'
 
+// Reads role from cookie and exposes permission checks.
 export function useDashboardRole() {
   const roleCookie = useCookie<AppRole>('role', { default: () => 'admin' })
 

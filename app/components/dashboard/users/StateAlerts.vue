@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Helper alerts for permissions, errors, and loading state.
 defineProps<{
   canCreate: boolean
   canUpdate: boolean

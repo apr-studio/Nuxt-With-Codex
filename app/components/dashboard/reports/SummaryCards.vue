@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Summary KPI cards with loading skeleton state.
 defineProps<{
   isLoading: boolean
   cards: Array<{
@@ -10,6 +11,7 @@ defineProps<{
 </script>
 
 <template>
+  <!-- Skeletons while loading. -->
   <div
     v-if="isLoading"
     class="grid gap-4 md:grid-cols-3"
@@ -19,6 +21,7 @@ defineProps<{
     <USkeleton class="h-28 w-full" />
   </div>
 
+  <!-- Render KPI cards when data is ready. -->
   <div
     v-else
     class="grid gap-4 md:grid-cols-3"

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useUsersCrud } from '~/composables/useUsersCrud'
 
+// Role-guarded users management page.
 definePageMeta({
   layout: 'dashboard',
   middleware: ['dashboard-role'],
   permission: 'users:view'
 })
 
+// CRUD state + handlers for the users table and modal.
 const {
   actionError,
   canCreate,
@@ -35,6 +37,7 @@ const {
 <template>
   <DashboardStableShell>
     <div class="space-y-4">
+      <!-- Users table + filters + pagination. -->
       <DashboardUsersListCard
         :can-create="canCreate"
         :can-update="canUpdate"
@@ -53,6 +56,7 @@ const {
         @delete="removeUser"
       />
 
+      <!-- Empty state / permission / error alerts. -->
       <DashboardUsersStateAlerts
         :can-create="canCreate"
         :can-update="canUpdate"
@@ -62,6 +66,7 @@ const {
       />
     </div>
 
+    <!-- Create/edit modal. -->
     <DashboardUsersUserFormModal
       :open="modalOpen"
       :title="modalTitle"

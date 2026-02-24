@@ -2,6 +2,7 @@ import { computed, ref, toValue } from 'vue'
 import { extractApiError } from '~/utils/api-error'
 import type { ApiResponse } from '#shared/api-response'
 
+// Generic mutation helper with retry + toast support.
 type Method = 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 type MaybeRefGetter<T> = T | Ref<T> | (() => T)
 type MutationBody = Record<string, unknown> | BodyInit | null
@@ -30,11 +31,13 @@ type MutationInput<TBody extends MutationBody> = {
   body?: TBody
 }
 
+// Executes mutations via $fetch with unified error handling.
 export function useApiMutation<TPayload, TBody extends MutationBody = Record<string, unknown>>(defaults: MutationDefaults = {}) {
   const pending = ref(false)
   const apiError = ref<{ code: string, message: string } | null>(null)
   const toast = useToast()
 
+  // Compute retry delay based on backoff strategy.
   function getRetryDelay(attempt: number, options: RetryOptions) {
     const baseDelay = options.delayMs ?? 400
     if (options.backoff === 'exponential') {
@@ -44,6 +47,7 @@ export function useApiMutation<TPayload, TBody extends MutationBody = Record<str
     return baseDelay
   }
 
+  // Check whether a given API error code should be retried.
   function shouldRetry(errorCode: string | undefined, options: RetryOptions) {
     if (!errorCode) {
       return true
@@ -54,6 +58,7 @@ export function useApiMutation<TPayload, TBody extends MutationBody = Record<str
     return options.retryOnCodes.includes(errorCode)
   }
 
+  // Execute the request with optional retry on recoverable errors.
   async function mutate(input: MutationInput<TBody> = {}) {
     const resolvedUrl = input.url || (defaults.url ? toValue(defaults.url) : '')
     if (!resolvedUrl) {
@@ -72,6 +77,7 @@ export function useApiMutation<TPayload, TBody extends MutationBody = Record<str
     const maxRetries = retryOptions?.count ?? 0
 
     try {
+      // Attempt retries in a single loop.
       for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
         try {
           const response = await $fetch<ApiResponse<TPayload>>(resolvedUrl, {
