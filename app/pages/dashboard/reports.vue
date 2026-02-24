@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DASHBOARD_REPORT_CHART_HEIGHTS } from '~/constants/dashboard-reports'
 import { useDashboardReports } from '~/composables/useDashboardReports'
 
 definePageMeta({
@@ -57,7 +58,7 @@ const {
           :option="trendOption"
           :is-loading="isSectionLoading"
           :is-using-fallback="isUsingFallback"
-          height-class="h-72 w-full"
+          :height-class="DASHBOARD_REPORT_CHART_HEIGHTS.trend"
         />
 
         <DashboardReportsChartCard
@@ -65,7 +66,7 @@ const {
           :option="revenueBarOption"
           :is-loading="isSectionLoading"
           :is-using-fallback="isUsingFallback"
-          height-class="h-72 w-full"
+          :height-class="DASHBOARD_REPORT_CHART_HEIGHTS.revenue"
         />
       </div>
 
@@ -74,7 +75,7 @@ const {
         :option="acquisitionPieOption"
         :is-loading="isSectionLoading"
         :is-using-fallback="isUsingFallback"
-        height-class="h-80 w-full"
+        :height-class="DASHBOARD_REPORT_CHART_HEIGHTS.acquisition"
       />
     </div>
   </DashboardStableShell>

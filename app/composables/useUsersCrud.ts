@@ -28,6 +28,15 @@ export function useUsersCrud() {
 
   const { payload: usersData, pending, refresh } = useApiFetch<UsersResponse>(usersApi, {
     query: queryParams,
+    retryOptions: {
+      count: 2,
+      delayMs: 500,
+      backoff: 'exponential',
+      retryOnCodes: ['REQUEST_FAILED', 'INTERNAL_ERROR']
+    },
+    toastOptions: {
+      error: 'Failed to load users'
+    },
     defaultData: {
       items: [],
       total: 0,
@@ -54,9 +63,45 @@ export function useUsersCrud() {
 
   const modalTitle = computed(() => editingUserId.value ? 'Edit User' : 'Create User')
 
-  const createUserMutation = useApiMutation<{ user: UserRow }, typeof formState>({ method: 'POST' })
-  const updateUserMutation = useApiMutation<{ user: UserRow }, typeof formState>({ method: 'PUT' })
-  const deleteUserMutation = useApiMutation<{ ok: true }>({ method: 'DELETE' })
+  const createUserMutation = useApiMutation<{ user: UserRow }, typeof formState>({
+    method: 'POST',
+    retryOptions: {
+      count: 1,
+      delayMs: 600,
+      backoff: 'fixed',
+      retryOnCodes: ['REQUEST_FAILED', 'INTERNAL_ERROR']
+    },
+    toastOptions: {
+      success: 'User created',
+      error: 'Create failed'
+    }
+  })
+  const updateUserMutation = useApiMutation<{ user: UserRow }, typeof formState>({
+    method: 'PUT',
+    retryOptions: {
+      count: 1,
+      delayMs: 600,
+      backoff: 'fixed',
+      retryOnCodes: ['REQUEST_FAILED', 'INTERNAL_ERROR']
+    },
+    toastOptions: {
+      success: 'User updated',
+      error: 'Update failed'
+    }
+  })
+  const deleteUserMutation = useApiMutation<{ ok: true }>({
+    method: 'DELETE',
+    retryOptions: {
+      count: 1,
+      delayMs: 600,
+      backoff: 'fixed',
+      retryOnCodes: ['REQUEST_FAILED', 'INTERNAL_ERROR']
+    },
+    toastOptions: {
+      success: 'User deleted',
+      error: 'Delete failed'
+    }
+  })
   const isMutating = computed(() =>
     createUserMutation.pending.value || updateUserMutation.pending.value || deleteUserMutation.pending.value
   )

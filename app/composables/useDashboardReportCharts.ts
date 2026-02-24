@@ -2,6 +2,7 @@ import { computed, toValue } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import type { EChartsOption } from 'echarts'
 import type { ReportMetrics, ReportRange } from '#shared/dashboard-reports'
+import { DASHBOARD_REPORT_GRIDS, DASHBOARD_REPORT_LABELS, DASHBOARD_REPORT_THEME } from '~/constants/dashboard-reports'
 
 type MaybeRefOrGetter<T> = T | Ref<T> | ComputedRef<T> | (() => T)
 
@@ -13,25 +14,18 @@ export function useDashboardReportCharts(options: {
 
   const isDark = computed(() => colorMode.value === 'dark')
   const palette = computed(() => {
-    if (isDark.value) {
-      return ['#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#a78bfa']
-    }
-    return ['#2563eb', '#059669', '#d97706', '#db2777', '#7c3aed']
+    return isDark.value
+      ? [...DASHBOARD_REPORT_THEME.palette.dark]
+      : [...DASHBOARD_REPORT_THEME.palette.light]
   })
-  const axisTextColor = computed(() => (isDark.value ? '#cbd5e1' : '#334155'))
-  const splitLineColor = computed(() => (isDark.value ? 'rgba(148,163,184,0.25)' : 'rgba(51,65,85,0.18)'))
-  const tooltipBg = computed(() => (isDark.value ? '#0f172a' : '#ffffff'))
-  const tooltipText = computed(() => (isDark.value ? '#e2e8f0' : '#0f172a'))
+  const axisTextColor = computed(() => (isDark.value ? DASHBOARD_REPORT_THEME.axisText.dark : DASHBOARD_REPORT_THEME.axisText.light))
+  const splitLineColor = computed(() => (isDark.value ? DASHBOARD_REPORT_THEME.splitLine.dark : DASHBOARD_REPORT_THEME.splitLine.light))
+  const tooltipBg = computed(() => (isDark.value ? DASHBOARD_REPORT_THEME.tooltip.dark.background : DASHBOARD_REPORT_THEME.tooltip.light.background))
+  const tooltipText = computed(() => (isDark.value ? DASHBOARD_REPORT_THEME.tooltip.dark.text : DASHBOARD_REPORT_THEME.tooltip.light.text))
 
   const trendLabels = computed(() => {
     const reportRange = toValue(options.reportRange)
-    if (reportRange === 'Last 7 days') {
-      return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    }
-    if (reportRange === 'Last 90 days') {
-      return ['W1', 'W3', 'W5', 'W7', 'W9', 'W11', 'W13']
-    }
-    return ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7']
+    return DASHBOARD_REPORT_LABELS[reportRange]
   })
 
   const trendOption = computed<EChartsOption>(() => {
@@ -39,7 +33,7 @@ export function useDashboardReportCharts(options: {
     return {
       color: palette.value,
       textStyle: { color: axisTextColor.value },
-      grid: { left: 36, right: 20, top: 28, bottom: 28 },
+      grid: DASHBOARD_REPORT_GRIDS.trend,
       xAxis: {
         type: 'category',
         boundaryGap: false,
@@ -74,7 +68,7 @@ export function useDashboardReportCharts(options: {
     return {
       color: palette.value,
       textStyle: { color: axisTextColor.value },
-      grid: { left: 36, right: 12, top: 20, bottom: 24 },
+      grid: DASHBOARD_REPORT_GRIDS.revenue,
       xAxis: {
         type: 'category',
         data: currentMetrics.revenueByChannel.map(item => item.name),
