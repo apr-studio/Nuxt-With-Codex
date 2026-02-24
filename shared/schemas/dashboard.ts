@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { REPORT_RANGES } from '#shared/dashboard-reports'
+import { REPORT_RANGES } from '~/features/dashboard/types/reports'
 
 export const reportRangeSchema = z.enum(REPORT_RANGES)
 

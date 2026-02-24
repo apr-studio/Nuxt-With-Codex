@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ReportRange } from '#shared/dashboard-reports'
+import type { ReportRange } from '~/features/dashboard/types/reports'
 
 // Reports header with range selector and refresh action.
 const props = defineProps<{

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AppRole } from '#shared/rbac'
-import type { UserRow, UsersResponse, UserStatus } from '#shared/dashboard-types'
+import type { UserRow, UsersResponse, UserStatus } from '~/features/dashboard/types/types'
 
 // Users list card: filters, list, and pagination controls.
 const props = defineProps<{

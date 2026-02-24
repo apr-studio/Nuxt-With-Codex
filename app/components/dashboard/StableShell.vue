@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DASHBOARD_NAV_ITEMS, getDashboardPageTitle } from '#shared/dashboard-shell'
+import { DASHBOARD_NAV_ITEMS, getDashboardPageTitle } from '~/features/dashboard/types/shell'
 import { useDashboardRole } from '~/composables/useDashboardRole'
 
 // Dashboard shell: sidebar + top bar + slot content.

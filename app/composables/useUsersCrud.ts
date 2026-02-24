@@ -1,5 +1,5 @@
 import { computed, reactive, ref, watch } from 'vue'
-import type { UserRole, UserRow, UsersResponse, UserStatus } from '#shared/dashboard-types'
+import type { UserRole, UserRow, UsersResponse, UserStatus } from '~/features/dashboard/types/types'
 import { useDashboardRole } from '~/composables/useDashboardRole'
 
 type FormError = {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ActivityResponse, KpiItem } from '#shared/dashboard-types'
+import type { ActivityResponse, KpiItem } from '~/features/dashboard/types/types'
 
 // Role-guarded dashboard overview.
 definePageMeta({

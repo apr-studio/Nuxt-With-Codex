@@ -1,8 +1,8 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { createDefaultReportResponse, DEFAULT_REPORT_METRICS, REPORT_RANGES } from '#shared/dashboard-reports'
-import { DASHBOARD_REPORT_LOADING } from '~/constants/dashboard-loading'
+import { createDefaultReportResponse, DEFAULT_REPORT_METRICS, REPORT_RANGES } from '~/features/dashboard/types/reports'
+import { DASHBOARD_REPORT_LOADING } from '~/features/dashboard/constants/loading'
 import { useApiFetch } from '~/composables/useApiFetch'
-import type { ReportMetrics, ReportRange, ReportResponse } from '#shared/dashboard-reports'
+import type { ReportMetrics, ReportRange, ReportResponse } from '~/features/dashboard/types/reports'
 
 // Report data source fallback for missing ranges.
 const fallbackMetrics: Record<ReportRange, ReportMetrics> = DEFAULT_REPORT_METRICS

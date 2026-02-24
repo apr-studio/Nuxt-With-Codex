@@ -1,4 +1,4 @@
-import type { Permission } from './rbac'
+import type { Permission } from '#shared/rbac'
 
 export type DashboardNavItem = {
   label: string

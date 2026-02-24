@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import type { UserRole, UserStatus } from '#shared/dashboard-types'
+import type { UserRole, UserStatus } from '~/features/dashboard/types/types'
 
 type FormError = {
   name?: string

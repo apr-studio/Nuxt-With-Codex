@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { parseResponseSchema } from '../utils/zod-schema'
-import type { ActivityResponse, KpiItem } from '#shared/dashboard-types'
-import type { ReportResponse } from '#shared/dashboard-reports'
+import type { ActivityResponse, KpiItem } from '~/features/dashboard/types/types'
+import type { ReportResponse } from '~/features/dashboard/types/reports'
 import {
   activitySchema,
   reportsSchema,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DASHBOARD_REPORT_CHART_HEIGHTS } from '~/constants/dashboard-reports'
+import { DASHBOARD_REPORT_CHART_HEIGHTS } from '~/features/dashboard/constants/reports'
 import { useDashboardReports } from '~/composables/useDashboardReports'
 
 // Role-guarded reports page.

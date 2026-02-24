@@ -1,8 +1,8 @@
 import { computed, toValue } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import type { EChartsOption } from 'echarts'
-import type { ReportMetrics, ReportRange } from '#shared/dashboard-reports'
-import { DASHBOARD_REPORT_GRIDS, DASHBOARD_REPORT_LABELS, DASHBOARD_REPORT_THEME } from '~/constants/dashboard-reports'
+import type { ReportMetrics, ReportRange } from '~/features/dashboard/types/reports'
+import { DASHBOARD_REPORT_GRIDS, DASHBOARD_REPORT_LABELS, DASHBOARD_REPORT_THEME } from '~/features/dashboard/constants/reports'
 
 // Builds ECharts options for report charts based on metrics + color mode.
 type MaybeRefOrGetter<T> = T | Ref<T> | ComputedRef<T> | (() => T)

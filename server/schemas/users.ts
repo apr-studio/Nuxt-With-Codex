@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { parseInputSchema, parseResponseSchema } from '../utils/zod-schema'
-import type { UserRole, UsersResponse, UserStatus } from '#shared/dashboard-types'
+import type { UserRole, UsersResponse, UserStatus } from '~/features/dashboard/types/types'
 import {
   usersListQuerySchema,
   createUserBodySchema,
