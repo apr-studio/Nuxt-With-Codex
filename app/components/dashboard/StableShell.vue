@@ -6,7 +6,7 @@ import { useDashboardRole } from '~/composables/useDashboardRole'
 const route = useRoute()
 const sidebarOpen = ref(false)
 const router = useRouter()
-const { role, normalizedRole, can } = useDashboardRole()
+const { normalizedRole, can } = useDashboardRole()
 
 const logoutMutation = useApiMutation<{ ok: true }>({
   url: useApiPath('/api/auth/logout'),
@@ -114,12 +114,7 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
                 </h1>
               </div>
               <div class="flex items-center gap-2">
-                <!-- Role switcher + quick links. -->
-                <USelect
-                  v-model="role"
-                  :items="['admin', 'editor', 'viewer']"
-                  class="w-28"
-                />
+                <!-- Role badge + quick links. -->
                 <UBadge
                   color="neutral"
                   variant="subtle"
@@ -163,10 +158,6 @@ const pageTitle = computed(() => getDashboardPageTitle(route.path))
     >
       <template #body>
         <div class="space-y-2 p-2">
-          <USelect
-            v-model="role"
-            :items="['admin', 'editor', 'viewer']"
-          />
           <UButton
             v-for="item in visibleNavItems"
             :key="`mobile-${item.to}`"

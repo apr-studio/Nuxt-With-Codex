@@ -10,7 +10,8 @@ export const API_ERROR_CODES = {
 } as const
 
 export const DOMAIN_ERROR_CODES = {
-  emailTaken: 'EMAIL_TAKEN'
+  emailTaken: 'EMAIL_TAKEN',
+  userNotFound: 'USER_NOT_FOUND'
 } as const
 
 export function getDefaultApiErrorCode(statusCode: number): string {

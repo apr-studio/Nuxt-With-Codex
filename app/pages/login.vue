@@ -8,10 +8,10 @@ const router = useRouter()
 
 const formState = reactive({
   email: '',
-  role: 'viewer'
+  password: ''
 })
 
-const loginMutation = useApiMutation<{ role: string }, { email: string, role: string }>({
+const loginMutation = useApiMutation<{ role: string }, { email: string, password: string }>({
   url: useApiPath('/api/auth/login'),
   method: 'POST',
   toastOptions: {
@@ -32,8 +32,8 @@ async function submit() {
   if (!formState.email.trim() || !/^\S+@\S+\.\S+$/.test(formState.email)) {
     formErrors.value.push({ name: 'email', message: 'Email format is invalid.' })
   }
-  if (!['admin', 'editor', 'viewer'].includes(formState.role)) {
-    formErrors.value.push({ name: 'role', message: 'Role is invalid.' })
+  if (!formState.password || formState.password.length < 8) {
+    formErrors.value.push({ name: 'password', message: 'Password must be at least 8 characters.' })
   }
   if (formErrors.value.length) {
     return
@@ -41,7 +41,7 @@ async function submit() {
   const result = await loginMutation.mutate({
     body: {
       email: formState.email,
-      role: formState.role
+      password: formState.password
     }
   })
   if (!result) {
@@ -102,20 +102,21 @@ onMounted(async () => {
           class="space-y-4"
           @submit="submit"
         >
-          <UFormField label="Email">
-            <UInput
-              v-model="formState.email"
-              type="email"
-              placeholder="name@example.com"
-            />
-          </UFormField>
+        <UFormField label="Email">
+          <UInput
+            v-model="formState.email"
+            type="email"
+            placeholder="name@example.com"
+          />
+        </UFormField>
 
-          <UFormField label="Role">
-            <USelect
-              v-model="formState.role"
-              :items="['admin', 'editor', 'viewer']"
-            />
-          </UFormField>
+        <UFormField label="Password">
+          <UInput
+            v-model="formState.password"
+            type="password"
+            placeholder="At least 8 characters"
+          />
+        </UFormField>
 
           <UButton
             type="submit"
@@ -126,6 +127,20 @@ onMounted(async () => {
             Sign in
           </UButton>
         </UForm>
+
+        <div class="mt-4 flex items-center justify-between text-sm">
+          <span class="text-muted">
+            Need an account?
+          </span>
+          <UButton
+            to="/register"
+            variant="ghost"
+            color="neutral"
+            icon="i-lucide-user-plus"
+          >
+            Create account
+          </UButton>
+        </div>
       </UCard>
     </div>
   </UContainer>

@@ -18,9 +18,16 @@ export const authMeResponseSchema = z.object({
 })
 
 export const authLoginBodySchema = z.object({
-  role: appRoleSchema,
-  email: z.string().trim().email().optional()
+  email: z.string().trim().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters.')
+})
+
+export const authRegisterBodySchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters.'),
+  email: z.string().trim().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters.')
 })
 
 export type AuthMeResponse = z.infer<typeof authMeResponseSchema>
 export type AuthLoginBody = z.infer<typeof authLoginBodySchema>
+export type AuthRegisterBody = z.infer<typeof authRegisterBodySchema>
