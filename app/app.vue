@@ -1,13 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
-const router = useRouter()
-const isDashboardTabLoading = ref(false)
-const dashboardLoadingStartedAt = ref(0)
-const minDashboardLoadingMs = 300
-const loadingTimeoutMs = 8000
-const showLoadingRetryHint = ref(false)
-let hideDashboardLoadingTimer: ReturnType<typeof setTimeout> | null = null
-let loadingTimeoutTimer: ReturnType<typeof setTimeout> | null = null
+const { isRouteLoading, showLoadingRetryHint, retryCurrentRoute } = useRouteLoadingOverlay()
 
 const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 const topNavItems = [
@@ -42,78 +35,12 @@ useSeoMeta({
   ogTitle: title,
   ogDescription: description
 })
-
-const removeBeforeEach = router.beforeEach((to, from) => {
-  const isRouteSwitch = to.fullPath !== from.fullPath
-
-  if (isRouteSwitch) {
-    if (hideDashboardLoadingTimer) {
-      clearTimeout(hideDashboardLoadingTimer)
-      hideDashboardLoadingTimer = null
-    }
-    if (loadingTimeoutTimer) {
-      clearTimeout(loadingTimeoutTimer)
-      loadingTimeoutTimer = null
-    }
-    showLoadingRetryHint.value = false
-    dashboardLoadingStartedAt.value = Date.now()
-    isDashboardTabLoading.value = true
-    loadingTimeoutTimer = setTimeout(() => {
-      if (isDashboardTabLoading.value) {
-        showLoadingRetryHint.value = true
-      }
-    }, loadingTimeoutMs)
-  }
-})
-
-const removeAfterEach = router.afterEach(() => {
-  if (!isDashboardTabLoading.value) {
-    return
-  }
-
-  const elapsed = Date.now() - dashboardLoadingStartedAt.value
-  const remaining = Math.max(0, minDashboardLoadingMs - elapsed)
-
-  hideDashboardLoadingTimer = setTimeout(() => {
-    isDashboardTabLoading.value = false
-    hideDashboardLoadingTimer = null
-  }, remaining)
-})
-
-const clearLoadingOverlay = () => {
-  if (hideDashboardLoadingTimer) {
-    clearTimeout(hideDashboardLoadingTimer)
-    hideDashboardLoadingTimer = null
-  }
-  if (loadingTimeoutTimer) {
-    clearTimeout(loadingTimeoutTimer)
-    loadingTimeoutTimer = null
-  }
-  isDashboardTabLoading.value = false
-  showLoadingRetryHint.value = false
-}
-
-async function retryCurrentRoute() {
-  clearLoadingOverlay()
-  await router.replace(route.fullPath)
-}
-
-const removeOnError = router.onError(() => {
-  clearLoadingOverlay()
-})
-
-onBeforeUnmount(() => {
-  clearLoadingOverlay()
-  removeBeforeEach()
-  removeAfterEach()
-  removeOnError()
-})
 </script>
 
 <template>
   <UApp>
     <div
-      v-if="isDashboardTabLoading"
+      v-if="isRouteLoading"
       class="fixed inset-0 z-[1100] flex items-center justify-center bg-default/25 backdrop-blur-sm"
     >
       <UCard class="w-[320px]">

@@ -1,48 +1,48 @@
 import { readBody, createError } from 'h3'
+import { Prisma } from '@prisma/client'
+import { DOMAIN_ERROR_CODES } from '#shared/api-error-codes'
 import { assertPermission } from '../utils/rbac'
+import { defineApiHandler } from '../utils/api-handler'
+import { apiSuccess } from '../utils/api-response'
+import { parseCreateUserBody, validateUserMutationResponse } from '../schemas/users'
 import { prisma } from '../utils/prisma'
 
-type CreatePayload = {
-  name?: string
-  email?: string
-  role?: 'admin' | 'editor' | 'viewer'
-  status?: 'active' | 'invited' | 'disabled'
-}
-
-function validatePayload(body: CreatePayload) {
-  if (!body.name || body.name.trim().length < 2) {
-    throw createError({ statusCode: 400, statusMessage: 'Name must be at least 2 characters.' })
-  }
-  if (!body.email || !/^\S+@\S+\.\S+$/.test(body.email)) {
-    throw createError({ statusCode: 400, statusMessage: 'Email format is invalid.' })
-  }
-  if (!body.role || !['admin', 'editor', 'viewer'].includes(body.role)) {
-    throw createError({ statusCode: 400, statusMessage: 'Role is invalid.' })
-  }
-  if (!body.status || !['active', 'invited', 'disabled'].includes(body.status)) {
-    throw createError({ statusCode: 400, statusMessage: 'Status is invalid.' })
-  }
-}
-
-export default defineEventHandler(async (event) => {
+export default defineApiHandler(async (event) => {
   assertPermission(event, 'users:create')
-  const body = await readBody<CreatePayload>(event)
-  validatePayload(body)
+  const body = parseCreateUserBody(await readBody(event))
 
-  const user = await prisma.user.create({
-    data: {
-      name: body.name!.trim(),
-      email: body.email!.trim().toLowerCase(),
-      role: body.role!.toUpperCase() as 'ADMIN' | 'EDITOR' | 'VIEWER',
-      status: body.status!.toUpperCase() as 'ACTIVE' | 'INVITED' | 'DISABLED'
+  let user
+  try {
+    user = await prisma.user.create({
+      data: {
+        name: body.name!.trim(),
+        email: body.email!.trim().toLowerCase(),
+        role: body.role!.toUpperCase() as 'ADMIN' | 'EDITOR' | 'VIEWER',
+        status: body.status!.toUpperCase() as 'ACTIVE' | 'INVITED' | 'DISABLED'
+      }
+    })
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Email already exists.',
+        data: { code: DOMAIN_ERROR_CODES.emailTaken }
+      })
     }
-  })
+    throw error
+  }
 
-  return {
+  const response = {
     user: {
-      ...user,
+      id: user.id,
+      name: user.name,
+      email: user.email,
       role: user.role.toLowerCase(),
-      status: user.status.toLowerCase()
+      status: user.status.toLowerCase(),
+      createdAt: user.createdAt.toISOString()
     }
   }
+
+  validateUserMutationResponse(response)
+  return apiSuccess(response)
 })

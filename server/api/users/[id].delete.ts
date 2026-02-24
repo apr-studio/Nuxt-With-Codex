@@ -1,13 +1,13 @@
 import { getRouterParam, createError } from 'h3'
 import { assertPermission } from '../../utils/rbac'
+import { defineApiHandler } from '../../utils/api-handler'
+import { apiSuccess } from '../../utils/api-response'
+import { parseUserId, validateDeleteUserResponse } from '../../schemas/users'
 import { prisma } from '../../utils/prisma'
 
-export default defineEventHandler(async (event) => {
+export default defineApiHandler(async (event) => {
   assertPermission(event, 'users:delete')
-  const id = Number(getRouterParam(event, 'id'))
-  if (!Number.isFinite(id)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid user id.' })
-  }
+  const id = parseUserId(getRouterParam(event, 'id'))
 
   const existing = await prisma.user.findUnique({ where: { id } })
   if (!existing) {
@@ -16,5 +16,7 @@ export default defineEventHandler(async (event) => {
 
   await prisma.user.delete({ where: { id } })
 
-  return { ok: true }
+  const response = { ok: true }
+  validateDeleteUserResponse(response)
+  return apiSuccess(response)
 })

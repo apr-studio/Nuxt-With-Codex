@@ -1,15 +1,18 @@
 import { getQuery } from 'h3'
 import { assertPermission } from '../utils/rbac'
+import { defineApiHandler } from '../utils/api-handler'
+import { apiSuccess } from '../utils/api-response'
+import { parseUsersListQuery, toUsersResponse, validateUsersResponse } from '../schemas/users'
 import { prisma } from '../utils/prisma'
 
-export default defineEventHandler((event) => {
+export default defineApiHandler((event) => {
   assertPermission(event, 'users:view')
 
-  const query = getQuery(event)
-  const q = String(query.q || '').trim().toLowerCase()
-  const status = String(query.status || 'all').toLowerCase()
-  const page = Math.max(1, Number(query.page || 1))
-  const pageSize = Math.max(1, Math.min(50, Number(query.pageSize || 5)))
+  const query = parseUsersListQuery(getQuery(event))
+  const q = query.q
+  const status = query.status
+  const page = query.page
+  const pageSize = query.pageSize
   const statusMap: Record<string, 'ACTIVE' | 'INVITED' | 'DISABLED'> = {
     active: 'ACTIVE',
     invited: 'INVITED',
@@ -40,15 +43,23 @@ export default defineEventHandler((event) => {
       tx.user.count({ where })
     ])
 
-    return {
-      items: items.map(item => ({
-        ...item,
-        role: item.role.toLowerCase(),
-        status: item.status.toLowerCase()
-      })),
+    const mappedItems = items.map(item => ({
+      id: item.id,
+      name: item.name,
+      email: item.email,
+      role: item.role.toLowerCase() as 'admin' | 'editor' | 'viewer',
+      status: item.status.toLowerCase() as 'active' | 'invited' | 'disabled',
+      createdAt: item.createdAt.toISOString()
+    }))
+
+    const response = toUsersResponse(
+      mappedItems,
       total,
       page,
       pageSize
-    }
+    )
+
+    validateUsersResponse(response)
+    return apiSuccess(response)
   })
 })

@@ -8,9 +8,9 @@ definePageMeta({
 
 const {
   availableRanges,
+  apiError,
   acquisitionPieOption,
   currentMetrics,
-  error,
   hasAnyData,
   isInitialLoading,
   isSectionLoading,
@@ -40,7 +40,7 @@ const {
         </template>
 
         <DashboardReportsStatusAlert
-          :error="error"
+          :error-message="apiError?.message || ''"
           :has-any-data="hasAnyData"
           :is-using-fallback="isUsingFallback"
         />

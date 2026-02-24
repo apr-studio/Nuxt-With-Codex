@@ -1,28 +1,26 @@
 <script setup lang="ts">
+import type { ActivityResponse, KpiItem } from '#shared/dashboard-types'
+
 definePageMeta({
   middleware: ['dashboard-role'],
   permission: 'dashboard:view'
 })
 
-type KpiItem = {
-  title: string
-  value: string
-  trend: string
-  icon: string
-}
-
-type ActivityResponse = {
-  activityItems: { label: string, content: string }[]
-  alertItems: { title: string, description: string, color: 'warning' | 'success' }[]
-}
-
-const { data: kpis } = await useFetch<KpiItem[]>(useApiPath('/api/dashboard/stats'))
-const { data: activity } = await useFetch<ActivityResponse>(useApiPath('/api/dashboard/activity'))
+const { payload: kpis, apiError: kpiApiError } = useApiFetch<KpiItem[]>(useApiPath('/api/dashboard/stats'), {
+  defaultData: []
+})
+const { payload: activity, apiError: activityApiError } = useApiFetch<ActivityResponse>(useApiPath('/api/dashboard/activity'))
 </script>
 
 <template>
   <DashboardStableShell>
     <div class="space-y-6">
+      <DashboardApiErrorAlert
+        v-if="kpiApiError || activityApiError"
+        title="Dashboard API error"
+        :message="kpiApiError?.message || activityApiError?.message || 'Failed to load dashboard data.'"
+      />
+
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <UCard
           v-for="kpi in (kpis || [])"

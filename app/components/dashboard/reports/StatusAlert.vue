@@ -1,18 +1,16 @@
 <script setup lang="ts">
 defineProps<{
-  error: unknown
+  errorMessage: string
   hasAnyData: boolean
   isUsingFallback: boolean
 }>()
 </script>
 
 <template>
-  <UAlert
-    v-if="error"
-    color="error"
-    variant="subtle"
+  <DashboardApiErrorAlert
+    v-if="errorMessage"
     title="Report API error"
-    :description="String(error)"
+    :message="errorMessage"
     class="mb-3"
   />
   <UAlert
