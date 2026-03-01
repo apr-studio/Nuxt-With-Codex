@@ -11,7 +11,8 @@
         "db:push": "prisma db push",
         "db:seed": "node prisma/seed.mjs",
         "lint": "eslint .",
-        "typecheck": "nuxt typecheck"
+        "typecheck": "nuxt typecheck",
+        "test:security": "node scripts/security-smoke-test.mjs"
     },
     "dependencies": {
         "@iconify-json/lucide": "^1.2.90",

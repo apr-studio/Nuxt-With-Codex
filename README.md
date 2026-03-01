@@ -73,6 +73,7 @@ pnpm dev
 - `pnpm preview` Preview production build.
 - `npm run lint` Lint the codebase.
 - `npm run typecheck` Typecheck with Nuxt.
+- `npm run test:security` Run CSRF + rate-limit smoke tests (requires running dev server).
 - `npm run db:generate` Prisma client generation.
 - `npm run db:push` Apply schema to local DB.
 - `npm run db:seed` Seed mock data.
