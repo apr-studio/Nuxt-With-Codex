@@ -17,6 +17,15 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
+  runtimeConfig: {
+    oauthGoogleClientId: '',
+    oauthGoogleClientSecret: '',
+    oauthFacebookClientId: '',
+    oauthFacebookClientSecret: '',
+    oauthAppleClientId: '',
+    oauthAppleClientSecret: ''
+  },
+
   eslint: {
     config: {
       stylistic: {

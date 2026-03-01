@@ -5,11 +5,13 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
+const apiPath = useApiPath
 
 const formState = reactive({
   email: '',
   password: ''
 })
+const showPassword = ref(false)
 
 const loginMutation = useApiMutation<{ role: string }, { email: string, password: string }>({
   url: useApiPath('/api/auth/login'),
@@ -26,6 +28,22 @@ const logoutMessage = computed(() => route.query.logout === '1')
 const redirectTarget = computed(() =>
   typeof route.query.redirect === 'string' ? route.query.redirect : ''
 )
+const oauthError = computed(() =>
+  typeof route.query.oauth_error === 'string' ? route.query.oauth_error : ''
+)
+const oauthProviders = [
+  { key: 'google', label: 'Google', icon: 'i-simple-icons-google' },
+  { key: 'facebook', label: 'Facebook', icon: 'i-simple-icons-facebook' },
+  { key: 'apple', label: 'Apple', icon: 'i-simple-icons-apple' }
+] as const
+
+function getOAuthHref(provider: (typeof oauthProviders)[number]['key']) {
+  const base = apiPath(`/api/auth/oauth/${provider}`)
+  if (!redirectTarget.value) {
+    return base
+  }
+  return `${base}?redirect=${encodeURIComponent(redirectTarget.value)}`
+}
 
 async function submit() {
   formErrors.value = []
@@ -94,6 +112,13 @@ onMounted(async () => {
             title="Sign in required"
             :description="`Please sign in to access ${redirectTarget}.`"
           />
+          <UAlert
+            v-if="oauthError"
+            color="error"
+            variant="subtle"
+            title="OAuth sign-in failed"
+            :description="oauthError"
+          />
         </div>
 
         <UForm
@@ -102,21 +127,35 @@ onMounted(async () => {
           class="space-y-4"
           @submit="submit"
         >
-        <UFormField label="Email">
-          <UInput
-            v-model="formState.email"
-            type="email"
-            placeholder="name@example.com"
-          />
-        </UFormField>
+          <UFormField label="Email">
+            <UInput
+              v-model="formState.email"
+              type="email"
+              placeholder="name@example.com"
+            />
+          </UFormField>
 
-        <UFormField label="Password">
-          <UInput
-            v-model="formState.password"
-            type="password"
-            placeholder="At least 8 characters"
-          />
-        </UFormField>
+          <UFormField label="Password">
+            <div class="space-y-2">
+              <UInput
+                v-model="formState.password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="At least 8 characters"
+              />
+              <div class="flex justify-end">
+                <UButton
+                  type="button"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                  @click="showPassword = !showPassword"
+                >
+                  {{ showPassword ? 'Hide' : 'Show' }}
+                </UButton>
+              </div>
+            </div>
+          </UFormField>
 
           <UButton
             type="submit"
@@ -127,6 +166,26 @@ onMounted(async () => {
             Sign in
           </UButton>
         </UForm>
+
+        <div class="my-4 flex items-center gap-3 text-xs text-muted">
+          <div class="h-px flex-1 bg-border" />
+          <span>OR</span>
+          <div class="h-px flex-1 bg-border" />
+        </div>
+
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <UButton
+            v-for="provider in oauthProviders"
+            :key="provider.key"
+            color="neutral"
+            variant="outline"
+            :icon="provider.icon"
+            block
+            @click="navigateTo(getOAuthHref(provider.key), { external: true })"
+          >
+            {{ provider.label }}
+          </UButton>
+        </div>
 
         <div class="mt-4 flex items-center justify-between text-sm">
           <span class="text-muted">
