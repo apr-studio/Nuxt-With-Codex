@@ -104,3 +104,59 @@ NUXT_OAUTH_APPLE_CLIENT_SECRET=...
 3. Start app and test from `/login` social buttons.
 
 If a provider is not configured, that provider login returns an OAuth error message on `/login`.
+
+## OAuth Console Checklist (With Screenshot Guide)
+
+Use this section as a field-by-field checklist while configuring each provider console.
+
+### Google (Google Cloud Console)
+
+| Console Field | Fill With |
+| --- | --- |
+| App Type | `Web application` |
+| Authorized JavaScript origins | `http://localhost:3000` |
+| Authorized redirect URI | `http://localhost:3000/api/auth/oauth/callback/google` |
+| OAuth scopes | `openid`, `email`, `profile` |
+| Client ID / Secret | Copy to `.env` as `NUXT_OAUTH_GOOGLE_CLIENT_ID` / `NUXT_OAUTH_GOOGLE_CLIENT_SECRET` |
+
+Suggested screenshots to keep:
+- OAuth client detail page (shows Client ID).
+- Redirect URI list page.
+- OAuth consent screen scopes page.
+
+### Facebook (Meta for Developers)
+
+| Console Field | Fill With |
+| --- | --- |
+| Product | `Facebook Login` |
+| App Domain | `localhost` (dev only) |
+| Valid OAuth Redirect URIs | `http://localhost:3000/api/auth/oauth/callback/facebook` |
+| Permissions | `email`, `public_profile` |
+| App ID / App Secret | Copy to `.env` as `NUXT_OAUTH_FACEBOOK_CLIENT_ID` / `NUXT_OAUTH_FACEBOOK_CLIENT_SECRET` |
+
+Suggested screenshots to keep:
+- Facebook Login settings page with redirect URI.
+- App basic settings page (App ID visible).
+- Permissions review page.
+
+### Apple (Apple Developer)
+
+| Console Field | Fill With |
+| --- | --- |
+| Service ID | Your web client identifier (used as client_id) |
+| Sign in with Apple enabled | `Yes` |
+| Return URL | `http://localhost:3000/api/auth/oauth/callback/apple` |
+| Domains | `localhost` (dev) |
+| Client Secret | JWT secret you generate for Apple token exchange, set as `NUXT_OAUTH_APPLE_CLIENT_SECRET` |
+| Client ID | Set as `NUXT_OAUTH_APPLE_CLIENT_ID` |
+
+Suggested screenshots to keep:
+- Service ID config (Return URL + Domains).
+- Keys page used to generate Apple client secret.
+- Sign in with Apple capability enabled page.
+
+### Final Verify
+
+1. Confirm `.env` has all required provider values.
+2. Restart dev server after `.env` changes.
+3. Open `/login` and test each provider button end-to-end.
