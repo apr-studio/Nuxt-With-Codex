@@ -11,6 +11,7 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
   { label: 'Overview', icon: 'i-lucide-home', to: '/dashboard/overview', permission: 'dashboard:view' },
   { label: 'Users', icon: 'i-lucide-users', to: '/dashboard/users', permission: 'users:view' },
   { label: 'Reports', icon: 'i-lucide-bar-chart-3', to: '/dashboard/reports', permission: 'reports:view' },
+  { label: 'Account', icon: 'i-lucide-user-cog', to: '/dashboard/account', permission: 'dashboard:view' },
   { label: 'Settings', icon: 'i-lucide-settings', to: '/dashboard/settings', permission: 'settings:view' }
 ]
 

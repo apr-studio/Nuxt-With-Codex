@@ -2,6 +2,7 @@ import { getCookie, setCookie, deleteCookie, type H3Event } from 'h3'
 import type { AppRole } from '#shared/rbac'
 
 type SessionPayload = {
+  userId: number
   role: AppRole
   createdAt: string
 }
@@ -34,8 +35,9 @@ export function getAuthSession(event: H3Event): SessionPayload | null {
   return decodeSession(raw)
 }
 
-export function setAuthSession(event: H3Event, role: AppRole) {
+export function setAuthSession(event: H3Event, userId: number, role: AppRole) {
   const payload: SessionPayload = {
+    userId,
     role,
     createdAt: new Date().toISOString()
   }

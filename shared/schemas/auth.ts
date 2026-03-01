@@ -13,6 +13,12 @@ export const permissionSchema = z.enum([
 ])
 
 export const authMeResponseSchema = z.object({
+  user: z.object({
+    id: z.number().int(),
+    name: z.string(),
+    email: z.string().email(),
+    avatarUrl: z.string().nullable()
+  }),
   role: appRoleSchema,
   permissions: z.array(permissionSchema)
 })
@@ -28,6 +34,13 @@ export const authRegisterBodySchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters.')
 })
 
+export const authProfileUpdateBodySchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters.').optional(),
+  currentPassword: z.string().min(8, 'Current password must be at least 8 characters.').optional(),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters.').optional()
+})
+
 export type AuthMeResponse = z.infer<typeof authMeResponseSchema>
 export type AuthLoginBody = z.infer<typeof authLoginBodySchema>
 export type AuthRegisterBody = z.infer<typeof authRegisterBodySchema>
+export type AuthProfileUpdateBody = z.infer<typeof authProfileUpdateBodySchema>

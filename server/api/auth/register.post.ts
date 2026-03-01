@@ -42,9 +42,15 @@ export default defineApiHandler(async (event) => {
   }
 
   const role = user.role.toLowerCase() as 'admin' | 'editor' | 'viewer'
-  setAuthSession(event, role)
+  setAuthSession(event, user.id, role)
 
   const response = {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatarUrl: null
+    },
     role,
     permissions: getPermissions(role)
   }

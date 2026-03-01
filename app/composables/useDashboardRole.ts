@@ -9,6 +9,7 @@ export function useDashboardRole() {
     toastOptions: { error: false }
   })
 
+  const currentUser = computed(() => payload.value?.user)
   const normalizedRole = computed<AppRole>(() => normalizeRole(payload.value?.role))
   const permissions = computed<Permission[]>(() => payload.value?.permissions || [])
 
@@ -17,6 +18,7 @@ export function useDashboardRole() {
   }
 
   return {
+    currentUser,
     normalizedRole,
     can
   }
