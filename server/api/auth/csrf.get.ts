@@ -1,10 +1,8 @@
 import { defineApiHandler } from '../../utils/api-handler'
 import { apiSuccess } from '../../utils/api-response'
-import { clearAuthSession } from '../../utils/session'
+import { getOrCreateCsrfToken } from '../../utils/csrf'
 
 export default defineApiHandler((event) => {
-  clearAuthSession(event)
-  return apiSuccess({ ok: true })
-}, {
-  csrf: true
+  const token = getOrCreateCsrfToken(event)
+  return apiSuccess({ token })
 })

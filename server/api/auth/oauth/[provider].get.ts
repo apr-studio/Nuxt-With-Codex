@@ -1,7 +1,14 @@
 import { createError, getQuery, sendRedirect } from 'h3'
 import { buildOAuthAuthorizationUrl, isOAuthProvider } from '../../../utils/oauth'
+import { assertRateLimit } from '../../../utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
+  assertRateLimit(event, {
+    key: 'oauth_start',
+    limit: 20,
+    windowMs: 60_000
+  })
+
   const providerValue = event.context.params?.provider || ''
   if (!isOAuthProvider(providerValue)) {
     throw createError({ statusCode: 404, statusMessage: 'OAuth provider not found.' })

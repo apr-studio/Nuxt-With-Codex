@@ -57,4 +57,11 @@ export default defineApiHandler(async (event) => {
 
   validateUserMutationResponse(response)
   return apiSuccess(response)
+}, {
+  csrf: true,
+  rateLimit: {
+    key: 'users_update',
+    limit: 40,
+    windowMs: 60_000
+  }
 })

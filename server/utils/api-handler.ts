@@ -1,6 +1,8 @@
 import { defineEventHandler, setResponseStatus, type H3Event } from 'h3'
 import { getDefaultApiErrorCode } from '#shared/api-error-codes'
 import { apiFailure } from './api-response'
+import { assertRateLimit } from './rate-limit'
+import { assertCsrfToken } from './csrf'
 
 type ErrorLike = {
   statusCode?: number
@@ -41,9 +43,24 @@ function normalizeError(error: unknown): { statusCode: number, code: string, mes
   }
 }
 
-export function defineApiHandler<T>(handler: (event: H3Event) => Promise<T> | T) {
+type ApiHandlerOptions = {
+  rateLimit?: {
+    key: string
+    limit: number
+    windowMs: number
+  }
+  csrf?: boolean
+}
+
+export function defineApiHandler<T>(handler: (event: H3Event) => Promise<T> | T, options: ApiHandlerOptions = {}) {
   return defineEventHandler(async (event) => {
     try {
+      if (options.rateLimit) {
+        assertRateLimit(event, options.rateLimit)
+      }
+      if (options.csrf) {
+        assertCsrfToken(event)
+      }
       return await handler(event)
     } catch (error) {
       const normalized = normalizeError(error)

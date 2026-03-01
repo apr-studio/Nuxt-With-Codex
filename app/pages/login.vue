@@ -6,6 +6,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const apiPath = useApiPath
+const { ensureCsrfToken } = useCsrfToken()
 
 const formState = reactive({
   email: '',
@@ -36,8 +37,26 @@ const oauthProviders = [
   { key: 'facebook', label: 'Facebook', icon: 'i-simple-icons-facebook' },
   { key: 'apple', label: 'Apple', icon: 'i-simple-icons-apple' }
 ] as const
+type OAuthProviderKey = (typeof oauthProviders)[number]['key']
 
-function getOAuthHref(provider: (typeof oauthProviders)[number]['key']) {
+const { payload: oauthAvailability } = useApiFetch<{
+  enabled: Record<OAuthProviderKey, boolean>
+}>(useApiPath('/api/auth/oauth/providers'), {
+  defaultData: {
+    enabled: {
+      google: false,
+      facebook: false,
+      apple: false
+    }
+  },
+  toastOptions: { error: false }
+})
+
+const enabledOAuthProviders = computed(() =>
+  oauthProviders.filter(provider => oauthAvailability.value?.enabled?.[provider.key])
+)
+
+function getOAuthHref(provider: OAuthProviderKey) {
   const base = apiPath(`/api/auth/oauth/${provider}`)
   if (!redirectTarget.value) {
     return base
@@ -72,7 +91,11 @@ async function submit() {
 }
 
 async function logout() {
-  await $fetch(useApiPath('/api/auth/logout'), { method: 'POST' })
+  const csrfToken = await ensureCsrfToken()
+  await $fetch(useApiPath('/api/auth/logout'), {
+    method: 'POST',
+    headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined
+  })
 }
 
 onMounted(async () => {
@@ -167,15 +190,21 @@ onMounted(async () => {
           </UButton>
         </UForm>
 
-        <div class="my-4 flex items-center gap-3 text-xs text-muted">
+        <div
+          v-if="enabledOAuthProviders.length"
+          class="my-4 flex items-center gap-3 text-xs text-muted"
+        >
           <div class="h-px flex-1 bg-border" />
           <span>OR</span>
           <div class="h-px flex-1 bg-border" />
         </div>
 
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div
+          v-if="enabledOAuthProviders.length"
+          class="grid grid-cols-1 gap-2 sm:grid-cols-3"
+        >
           <UButton
-            v-for="provider in oauthProviders"
+            v-for="provider in enabledOAuthProviders"
             :key="provider.key"
             color="neutral"
             variant="outline"

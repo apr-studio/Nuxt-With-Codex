@@ -19,4 +19,11 @@ export default defineApiHandler(async (event) => {
   const response = { ok: true }
   validateDeleteUserResponse(response)
   return apiSuccess(response)
+}, {
+  csrf: true,
+  rateLimit: {
+    key: 'users_delete',
+    limit: 20,
+    windowMs: 60_000
+  }
 })

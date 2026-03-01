@@ -56,4 +56,11 @@ export default defineApiHandler(async (event) => {
   }
   validateAuthMeResponse(response)
   return apiSuccess(response)
+}, {
+  csrf: true,
+  rateLimit: {
+    key: 'auth_register',
+    limit: 5,
+    windowMs: 60_000
+  }
 })
