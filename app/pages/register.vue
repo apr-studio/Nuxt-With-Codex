@@ -7,12 +7,13 @@ const router = useRouter()
 
 const formState = reactive({
   name: '',
-  email: ''
+  email: '',
+  password: ''
 })
 
 const formErrors = ref<{ name?: string, message: string }[]>([])
 
-const registerMutation = useApiMutation<{ role: string }, { name: string, email: string }>({
+const registerMutation = useApiMutation<{ role: string }, { name: string, email: string, password: string }>({
   url: useApiPath('/api/auth/register'),
   method: 'POST',
   toastOptions: {
@@ -31,6 +32,9 @@ async function submit() {
   if (!formState.email.trim() || !/^\S+@\S+\.\S+$/.test(formState.email)) {
     formErrors.value.push({ name: 'email', message: 'Email format is invalid.' })
   }
+  if (!formState.password || formState.password.length < 8) {
+    formErrors.value.push({ name: 'password', message: 'Password must be at least 8 characters.' })
+  }
   if (formErrors.value.length) {
     return
   }
@@ -38,7 +42,8 @@ async function submit() {
   const result = await registerMutation.mutate({
     body: {
       name: formState.name,
-      email: formState.email
+      email: formState.email,
+      password: formState.password
     }
   })
   if (!result) {
@@ -81,6 +86,14 @@ async function submit() {
               v-model="formState.email"
               type="email"
               placeholder="name@example.com"
+            />
+          </UFormField>
+
+          <UFormField label="Password">
+            <UInput
+              v-model="formState.password"
+              type="password"
+              placeholder="At least 8 characters"
             />
           </UFormField>
 

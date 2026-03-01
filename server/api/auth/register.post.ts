@@ -2,7 +2,10 @@ import { readBody, createError } from 'h3'
 import { Prisma } from '@prisma/client'
 import { defineApiHandler } from '../../utils/api-handler'
 import { apiSuccess } from '../../utils/api-response'
-import { parseAuthRegisterBody, validateAuthMeResponse } from '../../schemas/auth'
+import {
+  parseAuthRegisterBody,
+  validateAuthMeResponse
+} from '../../schemas/auth'
 import { getPermissions } from '../../utils/rbac'
 import { setAuthSession } from '../../utils/session'
 import { prisma } from '../../utils/prisma'
@@ -25,7 +28,10 @@ export default defineApiHandler(async (event) => {
       }
     })
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
       throw createError({
         statusCode: 409,
         statusMessage: 'Email already exists.',

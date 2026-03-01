@@ -6,6 +6,7 @@ import { defineApiHandler } from '../utils/api-handler'
 import { apiSuccess } from '../utils/api-response'
 import { parseCreateUserBody, validateUserMutationResponse } from '../schemas/users'
 import { prisma } from '../utils/prisma'
+import { hashPassword } from '../utils/password'
 
 export default defineApiHandler(async (event) => {
   assertPermission(event, 'users:create')
@@ -13,12 +14,14 @@ export default defineApiHandler(async (event) => {
 
   let user
   try {
+    const passwordHash = await hashPassword('1111111111')
     user = await prisma.user.create({
       data: {
         name: body.name!.trim(),
         email: body.email!.trim().toLowerCase(),
         role: body.role!.toUpperCase() as 'ADMIN' | 'EDITOR' | 'VIEWER',
-        status: body.status!.toUpperCase() as 'ACTIVE' | 'INVITED' | 'DISABLED'
+        status: body.status!.toUpperCase() as 'ACTIVE' | 'INVITED' | 'DISABLED',
+        passwordHash
       }
     })
   } catch (error) {
