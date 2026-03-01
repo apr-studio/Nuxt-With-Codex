@@ -36,6 +36,10 @@ export const authRegisterBodySchema = z.object({
 
 export const authProfileUpdateBodySchema = z.object({
   name: z.string().trim().min(2, 'Name must be at least 2 characters.').optional(),
+  avatarUrl: z.union([
+    z.string().trim().url(),
+    z.string().startsWith('data:image/', 'Avatar must be a valid image URL or data URL.')
+  ]).nullable().optional(),
   currentPassword: z.string().min(8, 'Current password must be at least 8 characters.').optional(),
   newPassword: z.string().min(8, 'New password must be at least 8 characters.').optional()
 })

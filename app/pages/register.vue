@@ -4,12 +4,14 @@ definePageMeta({
 })
 
 const router = useRouter()
+const { generatePassword, copyText } = usePasswordTools()
 
 const formState = reactive({
   name: '',
   email: '',
   password: ''
 })
+const showPassword = ref(false)
 
 const formErrors = ref<{ name?: string, message: string }[]>([])
 
@@ -23,6 +25,14 @@ const registerMutation = useApiMutation<{ role: string }, { name: string, email:
 })
 
 const isSubmitting = computed(() => registerMutation.pending.value)
+
+function fillGeneratedPassword() {
+  formState.password = generatePassword({ length: 14 })
+}
+
+async function copyPassword() {
+  await copyText(formState.password, 'Password')
+}
 
 async function submit() {
   formErrors.value = []
@@ -90,11 +100,45 @@ async function submit() {
           </UFormField>
 
           <UFormField label="Password">
-            <UInput
-              v-model="formState.password"
-              type="password"
-              placeholder="At least 8 characters"
-            />
+            <div class="space-y-2">
+              <UInput
+                v-model="formState.password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="At least 8 characters"
+              />
+              <div class="flex flex-wrap gap-2">
+                <UButton
+                  type="button"
+                  size="xs"
+                  color="neutral"
+                  variant="outline"
+                  icon="i-lucide-wand-sparkles"
+                  @click="fillGeneratedPassword"
+                >
+                  Generate
+                </UButton>
+                <UButton
+                  type="button"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-copy"
+                  @click="copyPassword"
+                >
+                  Copy
+                </UButton>
+                <UButton
+                  type="button"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                  @click="showPassword = !showPassword"
+                >
+                  {{ showPassword ? 'Hide' : 'Show' }}
+                </UButton>
+              </div>
+            </div>
           </UFormField>
 
           <UButton

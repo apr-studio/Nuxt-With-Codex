@@ -5,7 +5,7 @@ import type { AuthMeResponse } from '#shared/schemas/auth'
 
 // Reads role from session-backed auth endpoint and exposes permission checks.
 export function useDashboardRole() {
-  const { payload } = useApiFetch<AuthMeResponse>(useApiPath('/api/auth/me'), {
+  const { payload, refresh, pending } = useApiFetch<AuthMeResponse>(useApiPath('/api/auth/me'), {
     toastOptions: { error: false }
   })
 
@@ -20,6 +20,8 @@ export function useDashboardRole() {
   return {
     currentUser,
     normalizedRole,
-    can
+    can,
+    pendingCurrentUser: pending,
+    refreshCurrentUser: refresh
   }
 }

@@ -21,7 +21,7 @@ export default defineApiHandler(async (event) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      avatarUrl: null
+      avatarUrl: user.avatarUrl
     },
     role,
     permissions: getPermissions(role)

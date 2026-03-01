@@ -37,6 +37,7 @@ export default defineApiHandler(async (event) => {
     where: { id: user.id },
     data: {
       ...(body.name ? { name: body.name.trim() } : {}),
+      ...(body.avatarUrl !== undefined ? { avatarUrl: body.avatarUrl } : {}),
       ...(body.newPassword ? { passwordHash: await hashPassword(body.newPassword) } : {})
     }
   })
@@ -47,7 +48,7 @@ export default defineApiHandler(async (event) => {
       id: updated.id,
       name: updated.name,
       email: updated.email,
-      avatarUrl: null
+      avatarUrl: updated.avatarUrl
     },
     role,
     permissions: getPermissions(role)
